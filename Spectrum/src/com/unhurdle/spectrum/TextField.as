@@ -149,6 +149,8 @@ package com.unhurdle.spectrum
       super.disabled = value;
     }
 
+    public var showValidIcon:Boolean = true;
+    public var showInvalidIcon:Boolean = true;
     private var validIcon:Icon;
     private var invalidIcon:Icon;
     override public function get valid():Boolean
@@ -159,6 +161,9 @@ package com.unhurdle.spectrum
     override public function set valid(value:Boolean):void
     {
       super.valid = value;
+      if (!showValidIcon){
+        return;
+      }
       if(value){
         if(!validIcon){
           var type:String = IconType.CHECKMARK_MEDIUM;
@@ -211,10 +216,13 @@ package com.unhurdle.spectrum
       }
     }
 
-    private var invalidTooltip:AdaptiveTooltipBead;
+    protected var invalidTooltip:AdaptiveTooltipBead;
     override public function set invalid(value:Boolean):void
     {
       super.invalid = value;
+      if (!showInvalidIcon){
+        return;
+      }
       if(value){
         if(!invalidIcon){
           var type:String = IconType.ALERT_MEDIUM;

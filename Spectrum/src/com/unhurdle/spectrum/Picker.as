@@ -52,6 +52,7 @@ package com.unhurdle.spectrum
 		override protected function createElement():WrappedHTMLElement{
 			var elem:WrappedHTMLElement = super.createElement();
 			_button = new FieldButton();
+			_button.addBead(new OversetTooltip());
 			_button.labelClass = appendSelector("-label");
 			_button.className = appendSelector("-trigger");
 			_button.addEventListener("click",toggleDropdown);
@@ -82,6 +83,8 @@ package com.unhurdle.spectrum
 		private function handlePopoverChange(ev:Event):void{
 			_button.selected = popover.open;
 			toggle("is-open",popover.open);
+			// keep focus on button after closing it
+			_button.focus();
 		}
 		private function positionPopup():void{
 			var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(this);
