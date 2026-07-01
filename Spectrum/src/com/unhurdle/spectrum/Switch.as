@@ -22,12 +22,12 @@ package com.unhurdle.spectrum
     override protected function getSelector():String{
       return "spectrum-ToggleSwitch";
     }
-    private var _rightLabelElem:TextNode;
-    private var _leftLabelElem:TextNode;
-    private var input:HTMLInputElement;
+    protected var _rightLabelElem:TextNode;
+    protected var _leftLabelElem:TextNode;
+    protected var input:HTMLInputElement;
 
     // only set label once even if called multiple times while creating element
-    private var debouncedSetInput:Function;
+    protected var debouncedSetInput:Function;
 
     COMPILE::JS
     override protected function createElement():WrappedHTMLElement{
@@ -56,26 +56,33 @@ package com.unhurdle.spectrum
           _rightLabelElem = new TextNode("label");
           _rightLabelElem.className = appendSelector("-label");
           _rightLabelElem.text = _rightLabel;
+          if(!_rightLabel){
+            _rightLabelElem.element.style.display = "none";
+          }
           element.appendChild(_rightLabelElem.element);
         }
         debouncedSetInput();
       }
     }
-    private function handleInputChange(ev:Event):void{
+    protected function handleInputChange(ev:Event):void{
       var label:String = input.checked ? onLabel : offLabel;
       if(label){
         if(_rightLabelElem){
           _rightLabelElem.text = label;
+          _rightLabelElem.element.style.display = "";
         }
         if(_leftLabelElem){
           _leftLabelElem.text = label
+          _leftLabelElem.element.style.display = "";
         }
       } else {
         if(_rightLabelElem){
           _rightLabelElem.text = _rightLabel;
+          _rightLabelElem.element.style.display = "none";
         }
         if(_leftLabelElem){
           _leftLabelElem.text = _leftLabel;
+          _leftLabelElem.element.style.display = "none";
         }
       }
     }
@@ -113,6 +120,7 @@ package com.unhurdle.spectrum
       _rightLabel = value
       if(_rightLabelElem){
         _rightLabelElem.text = value;
+        _rightLabelElem.element.style.display = value ? "" : "none";
       }
     }
     private var _leftLabel:String = "";
@@ -126,6 +134,7 @@ package com.unhurdle.spectrum
       _leftLabel = value
       if(_leftLabelElem){
         _leftLabelElem.text = value;
+        _leftLabelElem.element.style.display = value ? "" : "none";
       }
     }
     public function get checked():Boolean

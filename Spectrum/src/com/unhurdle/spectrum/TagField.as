@@ -128,6 +128,7 @@ package com.unhurdle.spectrum
 				if (_limitToList && !valuesArr.length && ev && ev.data)
 				{
 					input.text = text.substring(0, text.length - ev.data.length);
+					updating = false;
 					return updateValue();
 				}
 			}
@@ -204,6 +205,13 @@ package com.unhurdle.spectrum
 		protected function addTag(text:String, data:String = null):void
 		{
 			if (text) {
+				var trimmedText:String = text.trim();
+				if(!trimmedText){ //don't add empty tags
+					return;
+				}
+				if(trimTag){
+					text = trimmedText; //trim spaces from the beginning and end of the tags
+				}
 				if (patt && !patt.test(text)) {
 					dispatchEvent(new ValueEvent("validationError", text));
 					return;
@@ -326,9 +334,9 @@ package com.unhurdle.spectrum
 				}
 			}
 		}
-		private function inputValueChanged():void
+		private function inputValueChanged(ev:InputEvent):void
 		{
-			updateValue();
+			updateValue(ev);
 			dispatchEvent(new ValueEvent("inputChanged", input.text));
 		}
 		private var _labelList:Array;
@@ -391,6 +399,16 @@ package com.unhurdle.spectrum
 		public function set limitToList(value:Boolean):void
 		{
 			_limitToList = value;
+		}
+		private var _trimTag:Boolean = true;
+
+		public function get trimTag():Boolean
+		{
+			return _trimTag;
+		}
+		public function set trimTag(value:Boolean):void
+		{
+			_trimTag = value;
 		}
 
 		private var _validationPattern:String;

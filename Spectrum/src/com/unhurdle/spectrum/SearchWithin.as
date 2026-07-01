@@ -33,9 +33,9 @@ package com.unhurdle.spectrum
     // {
     //   return _search;
     // }
-    private var _dropdown:Picker;
-    private var input:TextField;
-    private var button:ClearButton;
+    protected var _dropdown:Picker;
+    protected var input:TextField;
+    protected var button:ClearButton;
 
     COMPILE::JS
     override protected function createElement():WrappedHTMLElement{
@@ -73,19 +73,27 @@ package com.unhurdle.spectrum
 
       return elem;
     }
-    private function clear(ev:Event):void{
+    protected function clear(ev:Event):void{
       input.text = "";
       dispatchEvent(new Event("search"));
+    }
+    public function hideClearButton():void{
+      button.visible = false;
+      input.input.style.paddingRight = "11px";
+    }
+    public function showClearButton():void{
+      button.visible = true;
+      input.input.style.paddingRight = "25px";
     }
     // private function handleSubmit(ev:Event):Boolean{
     //   ev.preventDefault();
     //   dispatchEvent(new Event("search"));
     //   return false;
     // }
-    private function handleChange(ev:Event):void{
+    protected function handleChange(ev:Event):void{
       dispatchEvent(new Event("menuChange"));
     }
-    private function handleShowMenu(ev:Event):void{
+    protected function handleShowMenu(ev:Event):void{
       if(_sizeDropdownToHost){
         _dropdown.popupWidth = width;
       }

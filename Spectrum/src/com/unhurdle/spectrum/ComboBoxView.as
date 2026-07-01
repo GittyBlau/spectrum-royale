@@ -33,6 +33,7 @@ package com.unhurdle.spectrum{
 	 */
 	public class ComboBoxView extends BeadViewBase implements IComboBoxView
 	{
+		private var _filterPending:Boolean;
 		public function ComboBoxView()
 		{
 			super();
@@ -120,6 +121,7 @@ package com.unhurdle.spectrum{
 					comboHost.toggle("is-focused",false);
 				});
 			}
+			textfield.addBead(new OversetTooltip());
 			textfield.addEventListener(KeyboardEvent.KEY_UP,inputHandler);
 			textfield.addEventListener(KeyboardEvent.KEY_DOWN,handleKeyDown);
 			if(text)
@@ -234,18 +236,41 @@ package com.unhurdle.spectrum{
 		}
 
 		private function inputHandler(ev:KeyboardEvent):void {
-			if (textfield.text == _currentText || ev.key == NavigationKeys.DOWN || ev.key == NavigationKeys.UP) {
+			if (textfield.text == _currentText || ev.key == NavigationKeys.DOWN || ev.key == NavigationKeys.UP || ev.key == UIKeys.ESCAPE) {
 				// if the text hasn't changed or the up/down arrow key is pressed, ignore
-				// this event.  The down arrow key is handled in the handleKeyDown function.
+				// this event.  The down arrow key and escape key are handled in the handleKeyDown function.
 				return;
 			}
+			if (ev.key == 'Shift' || ev.key == 'Control' || ev.key == 'Alt' || ev.key == 'Meta') {
+				// modifier key only, ignore
+				return;
+			}
+			var listWasEmpty:Boolean = isListEmpty;
 			_currentText = textfield.text;
+			updateFilteredDataProvider();
+			updatePopupVisibility();
+			if (!listWasEmpty && isListEmpty)
+			{
+				// popup was opened due to keyboard change we want to filter the data provider
+				// when popup is made visible
+				// we don't want to filter if it was opened due to a mouse click
+				_filterPending = true;
+				updateFilteredDataProvider();
+			}
+		}
 
+		/**
+		 * Updates the filtered data provider based on the current text input
+		 * and sets the selected index in the original data provider
+		 */
+		private function updateFilteredDataProvider():void
+		{
 			var dataProvider:Object = model.dataProvider;	
 			if (textfield.text && model.dataProvider) {
 				dataProvider = comboHost.filterFunction(textfield.text, model.dataProvider);
 			}
 			list.dataProvider = dataProvider;
+			
 			var selectedIndex:int = -1;
 			var text:String = textfield.text.toLowerCase();
 
@@ -259,17 +284,22 @@ package com.unhurdle.spectrum{
 				}
 			}
 			model.selectedIndex = selectedIndex;
+			list.selectedItem = model.selectedItem;
+		}
 
-			// Show the popup while typing
+		/**
+		 * Updates popup visibility based on whether the filtered list is empty
+		 */
+		private function updatePopupVisibility():void
+		{
 			var storedIsListEmpty:Boolean = isListEmpty;
 			if (!popUpVisible && !storedIsListEmpty) {
 				popUpVisible = true;
 			} else if (storedIsListEmpty) {
 				popUpVisible = false;
 			}
-
-			list.selectedItem = model.selectedItem;
 		}
+		
 		/**
 		 *  Returns whether or not the pop-up is visible.
 		 * 
@@ -324,6 +354,12 @@ package com.unhurdle.spectrum{
 				comboHost.topMostEventDispatcher.addEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
 				_popup.open = true;
 				positionPopup();
+				if (_filterPending)
+				{
+					updateFilteredDataProvider();
+					updatePopupVisibility();
+					_filterPending = false;
+				}
 			}
 			//TODO how to handle keyboard and mouse focus?
 			textfield.focus();

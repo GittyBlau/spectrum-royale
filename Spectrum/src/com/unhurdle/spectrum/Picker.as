@@ -23,6 +23,7 @@ package com.unhurdle.spectrum
 	import org.apache.royale.events.utils.NavigationKeys;
 	import com.unhurdle.spectrum.utils.cloneNativeKeyboardEvent;
 	import org.apache.royale.events.utils.UIKeys;
+	import org.apache.royale.core.IItemRendererOwnerView;
 	/**
 	 * TODO maybe add flexible with styling of min-width: 0;width:auto;
 	 */
@@ -51,6 +52,7 @@ package com.unhurdle.spectrum
 		override protected function createElement():WrappedHTMLElement{
 			var elem:WrappedHTMLElement = super.createElement();
 			_button = new FieldButton();
+			_button.addBead(new OversetTooltip());
 			_button.labelClass = appendSelector("-label");
 			_button.className = appendSelector("-trigger");
 			_button.addEventListener("click",toggleDropdown);
@@ -58,6 +60,8 @@ package com.unhurdle.spectrum
 			_button.icon = Icon.getCSSTypeSelector(type);
 			_button.iconType = type;
 			_button.iconClass = appendSelector("-icon");
+			_button.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
+			_button.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 			// _button.textNode.element.style.maxWidth = '85%';
 			addElement(_button);
 			popover = new ComboBoxList();
@@ -79,6 +83,8 @@ package com.unhurdle.spectrum
 		private function handlePopoverChange(ev:Event):void{
 			_button.selected = popover.open;
 			toggle("is-open",popover.open);
+			// keep focus on button after closing it
+			_button.focus();
 		}
 		private function positionPopup():void{
 			var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(this);
@@ -108,22 +114,26 @@ package com.unhurdle.spectrum
 			}
 			popover.open = true;
 			popover.filterFunction = filterFunction;
-			_button.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
-			_button.removeEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
 			if(searchable){
 				popover.search.input.focus();
+			}
+			if (selectedIndex > -1)
+			{
+				COMPILE::JS {
+					(popover.list.view as IItemRendererOwnerView).getItemRendererForIndex(selectedIndex).element.scrollIntoView({ block: "nearest", container: "nearest" });
+				}
 			}
 		}
 		private function closePopup():void{
 			if(popover && popover.open){
-				_button.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 				popover.open = false;
 			}
 		}
 		
 		protected function handleControlMouseDown(event:MouseEvent):void
-		{			
-			event.stopImmediatePropagation();
+		{	
+			if(popover.open)
+				event.stopImmediatePropagation();
 		}
 		public function get dataProvider():Object{
 			return menu.dataProvider;
@@ -254,8 +264,10 @@ package com.unhurdle.spectrum
 
 		public function handleListChange():void{
 			closePopup();
-			setButtonText();
-			dispatchEvent(new Event("change"));
+			if (selectedIndex >= 0) {	
+				setButtonText();
+				dispatchEvent(new Event("change"));
+			}
 			//keep focus on button after closing, so key down (for arrow down/space) will open it
 			var currentFocus:Element = document.activeElement;
 			requestAnimationFrame(function():void{
@@ -263,9 +275,9 @@ package com.unhurdle.spectrum
 					_button.focus();
 				}
 			})
-			_button.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
 		}
 		
+		private var invalidIcon:Icon;
 		private var _invalid:Boolean;
 
 		public function get invalid():Boolean
@@ -279,11 +291,17 @@ package com.unhurdle.spectrum
 				toggle("is-invalid",value);
 				_button.invalid = value;
 				if(value){
-					var invalidIcon:Icon = new Icon(IconPrefix._18 + "Alert");
-					invalidIcon.size = "S";
-					_button.addElementAt(invalidIcon, _button.numElements - 1);
+					if(!invalidIcon){
+						invalidIcon = new Icon(IconPrefix._18 + "Alert");
+						invalidIcon.size = "S";
+					}
+					if(_button.getElementIndex(invalidIcon) == -1){
+						_button.addElementAt(invalidIcon, _button.numElements - 1);
+					}
 				}else{
-					_button.removeElement(invalidIcon);
+					if(invalidIcon && _button.getElementIndex(invalidIcon) != -1){
+						_button.removeElement(invalidIcon);
+					}
 				}
 			}
 			_invalid = value;
@@ -363,7 +381,7 @@ package com.unhurdle.spectrum
 				popover.search.input.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
 			}
 		}
-		private function handleKeyDown(event:KeyboardEvent):void
+		protected function handleKeyDown(event:KeyboardEvent):void
 		{
 			if(popover.open) {
 				// forward relevent keys to the list
@@ -389,7 +407,7 @@ package com.unhurdle.spectrum
 				}
 			} else {
 				if (event.key == NavigationKeys.DOWN || event.key == WhitespaceKeys.SPACE) {
-					openPopup();
+					toggleDropdown(event);
 				}
 			}
 			// prevent default behavior for these keys to keep the cursor position from changing
