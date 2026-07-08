@@ -201,6 +201,7 @@ package com.unhurdle.spectrum
 			else if(delay == 0 || new Date().getTime() - lastShownTS < coolDown){
 				showTooltip();
 			} else {
+				clearTimeouts();
 				showTimeoutId = setTimeout(showTooltip,delay);
 			}
 
