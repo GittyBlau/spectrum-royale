@@ -14,7 +14,7 @@ package com.unhurdle.spectrum.utils
             _startHandler = startHandler;
             _moveHandler = moveHandler;
             _endHandler = endHandler;
-            _target.style.touchAction = touchAction;
+            setTouchAction(touchAction);
             _target.addEventListener("pointerdown", handlePointerDown);
         }
 
@@ -33,6 +33,14 @@ package com.unhurdle.spectrum.utils
         public function get enabled():Boolean
         {
             return _enabled;
+        }
+
+        public function setTouchAction(value:String):void
+        {
+            COMPILE::JS
+            {
+                _target.style.touchAction = value;
+            }
         }
 
         public function set enabled(value:Boolean):void

@@ -3,15 +3,12 @@ package com.unhurdle.spectrum
 	COMPILE::JS{
 			import org.apache.royale.core.WrappedHTMLElement;
 	}
-	import org.apache.royale.events.MouseEvent;
-	import org.apache.royale.utils.PointUtils;
-	import org.apache.royale.geom.Point;
+	import com.unhurdle.spectrum.utils.PointerDrag;
 	import org.apache.royale.events.ValueEvent;
 	import com.unhurdle.spectrum.data.RGBColor;
 	import com.unhurdle.spectrum.interfaces.IRGBA;
 	import org.apache.royale.utils.rgbToHsv;
 	import org.apache.royale.utils.number.pinValue;
-	import org.apache.royale.utils.number.getPercent;
 
 	[Event(name="colorChanged", type="org.apache.royale.events.ValueEvent")]
 
@@ -31,6 +28,7 @@ package com.unhurdle.spectrum
 		protected var gradient:HTMLElement;
 		COMPILE::JS
 		private var input:HTMLInputElement;
+		private var pointerDrag:PointerDrag;
 
 		COMPILE::JS
 		override protected function createElement():WrappedHTMLElement{
@@ -52,6 +50,7 @@ package com.unhurdle.spectrum
 			input.min = "0";
 			input.max = "100";
 			elem.appendChild(input);
+			input.addEventListener("input", handleNativeInput);
 			return elem;
 		}
 
@@ -65,6 +64,10 @@ package com.unhurdle.spectrum
 			if(value != _disabled){
 				_disabled = value;
 				handle.disabled = value;
+				input.disabled = value;
+				if(pointerDrag){
+					pointerDrag.enabled = !value;
+				}
 				toggle("is-disabled",value);
 			}
 		}
@@ -82,6 +85,9 @@ package com.unhurdle.spectrum
 				changeBackgroundColor();
 				COMPILE::JS{
 					handle.element.style.left = "50%";
+					if(pointerDrag){
+						pointerDrag.setTouchAction(value ? "pan-x" : "pan-y");
+					}
 				}
 			}
 		}
@@ -148,7 +154,12 @@ package com.unhurdle.spectrum
     }
     protected function setHandlePosition(percent:Number):void{
       //make sure it's between 0 and 100
+			percent = pinValue(percent,0,100);
       var percentVal:String = percent + "%"
+			COMPILE::JS
+			{
+				input.value = "" + percent;
+			}
       if(vertical){
         handle.setStyle("top",percentVal);
       }else{
@@ -159,7 +170,7 @@ package com.unhurdle.spectrum
 		override public function addedToParent():void{
 			super.addedToParent();
 			if(!addedOnce){
-				addEventListener('mousedown', onMouseDown);
+				pointerDrag = new PointerDrag(element, handlePointerStart, handlePointerMove, handlePointerEnd, vertical ? "pan-x" : "pan-y");
 			}
 			getRGBColors();
 			addedOnce = true;
@@ -167,28 +178,35 @@ package com.unhurdle.spectrum
       calculateHandlePosition();
 		}
 
-		// Element interaction
-		protected function onMouseDown(e:MouseEvent):void {
-			if(disabled){
-				return;
+		COMPILE::JS
+		private function handlePointerStart(event:*):Boolean {
+			if(disabled || event.target === input){
+				return false;
 			}
 			handle.toggle("is-dragged",true);
-			onMouseMove(e);
-			window.addEventListener('mouseup', onMouseUp);
-			window.addEventListener('mousemove', onMouseMove);
+			return true;
 		}
 
-		protected function onMouseUp():void {
+		COMPILE::JS
+		private function handlePointerEnd(event:*, cancelled:Boolean):void {
 			handle.toggle("is-dragged",false);
-			window.removeEventListener('mouseup', onMouseUp);
-			window.removeEventListener('mousemove', onMouseMove);
 		}
-		protected function onMouseMove(e:MouseEvent):void {
+
+		COMPILE::JS
+		private function handlePointerMove(event:*):void {
 			if(disabled){
 				return;
 			}
+			updateFromPercent(getPointerPercentagePosition(event));
+		}
+
+		COMPILE::JS
+		private function handleNativeInput(event:*):void {
+			updateFromPercent(Number(input.value));
+		}
+
+		protected function updateFromPercent(percent:Number):void {
 			handle.visible = true;
-			var percent:Number = getMousePercentagePosition(e);
 			var num:Number = percent/(100/(colorStops.length - 1));
 			if(isInt(num)){
 				handle.appliedColor = colorToRGBA(colorStops[num]);
@@ -204,19 +222,20 @@ package com.unhurdle.spectrum
       setHandlePosition(percent);
 			dispatchEvent(new ValueEvent("colorChanged",appliedColor));			
 		}
-		COMPILE::SWF
-		protected function getMousePercentagePosition(event:MouseEvent):Number{return 0;}
+
 		COMPILE::JS
-		protected function getMousePercentagePosition(event:MouseEvent):Number{
-			var localPoint:Point = PointUtils.globalToLocal(new Point(event.clientX,event.clientY),this);
+		private function getPointerPercentagePosition(event:*):Number{
+			var bounds:ClientRect = element.getBoundingClientRect();
 			if(vertical){
-				var sliderOffsetHeight:Number = element.offsetHeight;
-				var y:Number = pinValue(localPoint.y,0,sliderOffsetHeight);
-				return getPercent(y,sliderOffsetHeight);
+				if(bounds.height == 0){
+					return 0;
+				}
+				return pinValue(event.clientY - bounds.top,0,bounds.height) / bounds.height * 100;
 			}else{
-				var sliderOffsetWidth:Number = element.offsetWidth;
-				var x:Number = pinValue(localPoint.x,0,sliderOffsetWidth);
-				return getPercent(x,sliderOffsetWidth);
+				if(bounds.width == 0){
+					return 0;
+				}
+				return pinValue(event.clientX - bounds.left,0,bounds.width) / bounds.width * 100;
 			}
 		}
 

@@ -1,12 +1,8 @@
 package com.unhurdle.spectrum
 {
 
-	import org.apache.royale.utils.PointUtils;
-	import org.apache.royale.geom.Point;
-	import org.apache.royale.events.MouseEvent;
 	import com.unhurdle.spectrum.interfaces.IRGBA;
 	import org.apache.royale.utils.number.pinValue;
-	import org.apache.royale.utils.number.getPercent;
 	import com.unhurdle.spectrum.data.RGBColor;
 	import org.apache.royale.events.ValueEvent;
 
@@ -83,12 +79,12 @@ package com.unhurdle.spectrum
 			var endStr:String =" 0%, rgba(0, 0, 0, 0) 100%)";
 			gradient.style.background = startStr + endStr;
 		}
-		override protected function onMouseMove(e:MouseEvent):void {
+		override protected function updateFromPercent(percent:Number):void {
 			if(disabled){
 				return;
 			}
 			//opaque at beginning
-			var percent:Number = 100 - getMousePercentagePosition(e);
+			percent = 100 - percent;
 			var color:IRGBA = handle.appliedColor.clone();
 			color.alpha = percent/100;
 			handle.appliedColor = color;
