@@ -4,10 +4,10 @@ package com.unhurdle.spectrum
 	COMPILE::JS{
 		import org.apache.royale.core.WrappedHTMLElement;
 	}
+	import com.unhurdle.spectrum.utils.PointerDrag;
 	import org.apache.royale.events.Event;
 	import com.unhurdle.spectrum.includes.SliderInclude;
 	import org.apache.royale.utils.number.pinValue;
-	import org.apache.royale.utils.number.getPercent;
 
 	[Event(name="change", type="org.apache.royale.events.Event")]
 	public class Dial extends SpectrumBase
@@ -25,6 +25,7 @@ package com.unhurdle.spectrum
 		private var handle:HTMLDivElement;
 		private var labelContainer:HTMLElement;
 		private var controlsContainer:HTMLElement;
+		private var pointerDrag:PointerDrag;
 		protected var labelNode:TextNode;
 		protected var valueNode:TextNode;
 
@@ -44,7 +45,8 @@ package com.unhurdle.spectrum
 			handle.appendChild(input);
 			controlsContainer.appendChild(handle);
 			elem.appendChild(controlsContainer);
-			// element.addEventListener('mousedown', onMouseDown);
+			input.addEventListener("input", handleNativeInput);
+			pointerDrag = new PointerDrag(element, handlePointerStart, handlePointerMove, handlePointerEnd, "pan-y");
 			return elem;
 		}
 		public function get min():Number
@@ -163,12 +165,16 @@ package com.unhurdle.spectrum
 		{
 			if(val != !!_disabled){
 				toggle("is-disabled",val);
+				input.disabled = val;
+				if(pointerDrag){
+					pointerDrag.enabled = !val;
+				}
 			}
 			_disabled = val;
 		}
 		protected function positionElements():void{
-			var percent:Number = this.value / (max - min) * 100;
-			handle.tabIndex = Number(percent + "%");
+			var range:Number = max - min;
+			var percent:Number = range == 0 ? 0 : pinValue((value - min) / range * 100,0,100);
 			setLabel();
 			var deg:Number = percent * 0.01 * (260) - 40;
 			handle.style.transform = 'rotate('+ deg + 'deg'+')';
@@ -176,10 +182,7 @@ package com.unhurdle.spectrum
 		
 		override public function addedToParent():void{
 			super.addedToParent();
-			if(!disabled){
-					addEventListener('mousedown', onMouseDown);
-			}
-
+			positionElements();
 		}
 
 		public function get value():Number
@@ -199,24 +202,41 @@ package com.unhurdle.spectrum
 				
 		}
 
-		private function onMouseDown(e:MouseEvent):void {
-			window.addEventListener('mouseup', onMouseUp);
-			window.addEventListener('mousemove', onMouseMove);
+		COMPILE::JS
+		private function handlePointerStart(event:PointerEvent):Boolean {
+			if(disabled || event.target === input){
+				return false;
+			}
+			handle.classList.add("is-dragged");
+			return true;
 		}
 
-		private function onMouseUp(e:MouseEvent):void {
-			window.removeEventListener('mouseup', onMouseUp);
-			window.removeEventListener('mousemove', onMouseMove);
+		COMPILE::JS
+		private function handlePointerEnd():void {
+			handle.classList.remove("is-dragged");
 		}
 
-		private function onMouseMove(e:MouseEvent) :void{
-			var elem:HTMLElement = element as HTMLElement;
-			var dialOffsetWidth:Number = elem.offsetWidth;
-			var dialOffsetLeft:Number = elem.offsetLeft + (elem.offsetParent as HTMLElement).offsetLeft;
-			var x:Number = pinValue(e.x - dialOffsetLeft,0,dialOffsetWidth);
-			var percent:Number = getPercent(x,dialOffsetWidth);
-			var val:Number = (max-min) / (100/percent);
-			value = val;
+		COMPILE::JS
+		private function handlePointerMove(event:PointerEvent):void {
+			var bounds:ClientRect = element.getBoundingClientRect();
+			if(bounds.width == 0){
+				return;
+			}
+			var newValue:Number = min + (max - min) * pinValue(event.clientX - bounds.left,0,bounds.width) / bounds.width;
+			var inputStep:Number = Number(input.step);
+			if(inputStep > 0){
+				newValue = min + Math.round((newValue - min) / inputStep) * inputStep;
+			}
+			newValue = pinValue(newValue,min,max);
+			if(value != newValue){
+				value = newValue;
+				dispatchEvent(new Event("change"));
+			}
+		}
+
+		COMPILE::JS
+		private function handleNativeInput():void {
+			positionElements();
 			dispatchEvent(new Event("change"));
 		}
 	}
