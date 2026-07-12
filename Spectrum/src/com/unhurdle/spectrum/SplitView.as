@@ -35,7 +35,10 @@ package com.unhurdle.spectrum
 				_splitter = new Splitter();
 				COMPILE::JS{
 					splitter.cursor = direction == "horizontal" ? "col-resize" : "row-resize";
-					pointerDrag = new PointerDrag(_splitter.element, handlePointerStart, handlePointerMove, handlePointerEnd, direction == "horizontal" ? "pan-y" : "pan-x");
+					_splitter.element.style.userSelect = "none";
+					_splitter.element.style.webkitUserSelect = "none";
+					_splitter.element.style.setProperty("-webkit-touch-callout","none");
+					pointerDrag = new PointerDrag(_splitter.element, handlePointerStart, handlePointerMove, handlePointerEnd, "none");
 					pointerDrag.enabled = isDraggable;
 				}
 			}
@@ -58,6 +61,7 @@ package com.unhurdle.spectrum
 				// value? splitter.classList.add("is-draggable"): splitter.classList.remove("is-draggable");
 			_isDraggable = value;
 			splitter.draggable = value;
+			splitter.touchHitAreaDirection = direction;
 			if(pointerDrag){
 				pointerDrag.enabled = value;
 			}
@@ -149,9 +153,7 @@ package com.unhurdle.spectrum
 				COMPILE::JS{
 					if(_splitter){
 						_splitter.cursor = value == "horizontal" ? "col-resize" : "row-resize";
-					}
-					if(pointerDrag){
-						pointerDrag.setTouchAction(value == "horizontal" ? "pan-y" : "pan-x");
+						_splitter.touchHitAreaDirection = value;
 					}
 				}
 		}
