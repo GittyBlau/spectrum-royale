@@ -12,6 +12,7 @@ package com.unhurdle.spectrum
   import org.apache.royale.utils.DisplayUtils;
   import org.apache.royale.html.elements.Div;
   import org.apache.royale.events.MouseEvent;
+  import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
 
   public class DatePicker extends SpectrumBase
   {
@@ -35,6 +36,7 @@ package com.unhurdle.spectrum
     private var input2:TextField;
     private var button:FieldButton;
     private var datePicker:HTMLInputElement;
+    private var anchorTracker:AnchoredOverlayTracker;
     
     public var dateFormat:String = "mm/dd/yyyy";
     
@@ -165,15 +167,30 @@ package com.unhurdle.spectrum
       topMostEventDispatcher.addEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
       popover.open = true;
       button.selected = true;
-      var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(this);
-      popover.y = componentBounds.bottom;
-      popover.x = componentBounds.left;
+      COMPILE::JS
+      {
+        if(!anchorTracker){
+          anchorTracker = new AnchoredOverlayTracker(element, positionPopup);
+        }
+        anchorTracker.start();
+      }
+      positionPopup();
       calendar.startDate = startDate;
       calendar.endDate = endDate;
       calendar.selectRange(startDate,endDate);
     }
+    private function positionPopup():void
+    {
+      var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(this);
+      popover.y = componentBounds.bottom;
+      popover.x = componentBounds.left;
+    }
     private function closePopover():void
     {
+      COMPILE::JS
+      {
+        anchorTracker.stop();
+      }
       button.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
       popover.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
       topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);

@@ -17,6 +17,7 @@ package com.unhurdle.spectrum
 	import com.unhurdle.spectrum.const.IconPrefix;
 	import com.unhurdle.spectrum.data.IMenuItem;
 	import com.unhurdle.spectrum.utils.getExplicitZIndex;
+  import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
   /**
    * TODO maybe add flexible with styling of min-width: 0;width:auto;
    */
@@ -64,55 +65,17 @@ package com.unhurdle.spectrum
       return elem;
     }
     public var popover:ComboBoxList;
+    private var anchorTracker:AnchoredOverlayTracker;
     private function get menu():Menu{
       return popover.list;
     }
 
     private function toggleDropdown(ev:*):void{
-      var minHeight:Number = _minMenuHeight + 6;
       ev.preventDefault();
       var open:Boolean = !popover.open;
       toggle("is-open",open);
       if(open){
-        // Figure out direction and max size
-        var appBounds:Rectangle = DisplayUtils.getScreenBoundingRect(Application.current.initialView);
-        var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(this);
-        var spaceToBottom:Number = appBounds.bottom - componentBounds.bottom;
-        var spaceToTop:Number = componentBounds.top - appBounds.top;
-        var spaceOnBottom:Boolean = spaceToBottom >= spaceToTop;
-        var pxStr:String = "px";
-        switch(_position)
-        {
-          case "top":
-            if(spaceToTop >= minHeight || !spaceOnBottom){
-              positionPopoverTop(appBounds.bottom - componentBounds.top,spaceToTop);
-            } else {
-              positionPopoverBottom(componentBounds,spaceToBottom);
-
-            }
-            break;
-        
-          default:
-            if(spaceToBottom >= minHeight || spaceOnBottom){
-              positionPopoverBottom(componentBounds,spaceToBottom);
-            } else {
-              positionPopoverTop(appBounds.bottom - componentBounds.top,spaceToTop);
-            }
-            break;
-        }
-        var leftSpace:Number = componentBounds.x;
-        var rightSpace:Number = appBounds.width - (componentBounds.x + componentBounds.width);
-        if(rightSpace < leftSpace){
-          popover.setStyle("right",rightSpace + "px");
-          popover.setStyle("left",null);
-        } else {
-          popover.setStyle("right",null);
-          popover.setStyle("left",leftSpace + "px");
-        }
-        if(isNaN(_popupWidth)){
-          popover.setStyle("minWidth",width + "px");
-          // popover.width = width;
-        }
+        positionPopup();
         dispatchEvent(new Event("showMenu"));
 				callLater(openPopup)
       } else {
@@ -126,18 +89,66 @@ package com.unhurdle.spectrum
         popover.setStyle("z-index",zIndex);
       }
       popover.open = true;
+      COMPILE::JS
+      {
+        if(!anchorTracker){
+          anchorTracker = new AnchoredOverlayTracker(element, positionPopup);
+        }
+        anchorTracker.start();
+      }
 			button.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
       popover.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 			topMostEventDispatcher.addEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
     }
     private function closePopup():void{
       if(popover && popover.open){
+      COMPILE::JS
+      {
+        anchorTracker.stop();
+      }
   			popover.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 	  		button.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 		  	topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
         popover.open = false;
       }
 
+    }
+    private function positionPopup():void{
+      var minHeight:Number = _minMenuHeight + 6;
+      var appBounds:Rectangle = DisplayUtils.getScreenBoundingRect(Application.current.initialView);
+      var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(this);
+      var spaceToBottom:Number = appBounds.bottom - componentBounds.bottom;
+      var spaceToTop:Number = componentBounds.top - appBounds.top;
+      var spaceOnBottom:Boolean = spaceToBottom >= spaceToTop;
+      switch(_position)
+      {
+        case "top":
+          if(spaceToTop >= minHeight || !spaceOnBottom){
+            positionPopoverTop(componentBounds.top,spaceToTop);
+          } else {
+            positionPopoverBottom(componentBounds,spaceToBottom);
+          }
+          break;
+        default:
+          if(spaceToBottom >= minHeight || spaceOnBottom){
+            positionPopoverBottom(componentBounds,spaceToBottom);
+          } else {
+            positionPopoverTop(componentBounds.top,spaceToTop);
+          }
+          break;
+      }
+      var leftSpace:Number = componentBounds.x;
+      var rightSpace:Number = appBounds.width - (componentBounds.x + componentBounds.width);
+      if(rightSpace < leftSpace){
+        popover.setStyle("right",rightSpace + "px");
+        popover.setStyle("left",null);
+      } else {
+        popover.setStyle("right",null);
+        popover.setStyle("left",leftSpace + "px");
+      }
+      if(isNaN(_popupWidth)){
+        popover.setStyle("minWidth",width + "px");
+      }
     }
     private function positionPopoverBottom(componentBounds:Rectangle,maxHeight:Number):void{
       maxHeight -= 6;
@@ -151,14 +162,13 @@ package com.unhurdle.spectrum
         popover.position = "bottom";
       }
     }
-    private function positionPopoverTop(bottom:Number,maxHeight:Number):void{
+    private function positionPopoverTop(anchorTop:Number,maxHeight:Number):void{
       maxHeight -= 6;
       var pxStr:String;
-      pxStr = bottom + "px";
-      popover.setStyle("top","");
-      popover.setStyle("bottom",pxStr);
+      popover.setStyle("bottom","");
       pxStr = maxHeight + "px";
       popover.setStyle("max-height",pxStr);
+      popover.setStyle("top",(anchorTop - popover.height) + "px");
       if(popover.position == "bottom"){
         popover.position = "top";
       }

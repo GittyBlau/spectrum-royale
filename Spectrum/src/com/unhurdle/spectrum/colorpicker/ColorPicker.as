@@ -12,7 +12,6 @@ package com.unhurdle.spectrum.colorpicker
 	import com.unhurdle.spectrum.interfaces.IRGBA;
 	import com.unhurdle.spectrum.data.RGBColor;
 	import com.unhurdle.spectrum.interfaces.IColorPopover;
-	import org.apache.royale.utils.DisplayUtils;
 	import com.unhurdle.spectrum.utils.getDataProviderItem;
 	import org.apache.royale.events.ValueEvent;
 	import org.apache.royale.events.Event;
@@ -257,7 +256,7 @@ package com.unhurdle.spectrum.colorpicker
 		private var zIndexSet:Boolean = false;
 		protected function openPopup():void{
 			initialColor = appliedColor;
-			popover.anchor = DisplayUtils.getScreenBoundingRect(button);
+			popover.anchorTarget = button;
 			if(!zIndexSet){
 				var zIndex:Number = getExplicitZIndex(this);
 				if(zIndex > 2){
@@ -270,35 +269,12 @@ package com.unhurdle.spectrum.colorpicker
 			button.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 			popover.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 			topMostEventDispatcher.addEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
-			COMPILE::JS
-			{
-				window.addEventListener('resize', handleResize);
-			}
-		}
-		COMPILE::JS
-		protected function handleResize():void{
-			if(popover && popover.open){
-				// Double rAF to wait for layout to complete
-				requestAnimationFrame(function():void{
-					requestAnimationFrame(repositionPopup);
-				});
-			}
-		}
-		COMPILE::JS
-		protected function repositionPopup():void{
-			if(popover && popover.open){
-				popover.anchor = DisplayUtils.getScreenBoundingRect(button);
-			}
 		}
 		protected function closePopover():void{
 			if(popover && popover.open){
 				popover.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 				button.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 				topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
-				COMPILE::JS
-				{
-					window.removeEventListener('resize', handleResize);
-				}
 				popover.open = false;
 				COMPILE::JS
 				{

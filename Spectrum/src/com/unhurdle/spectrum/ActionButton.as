@@ -15,6 +15,7 @@ package com.unhurdle.spectrum
   import com.unhurdle.spectrum.includes.ActionButtonInclude;
   import com.unhurdle.spectrum.interfaces.IKeyboardNavigateable;
   import com.unhurdle.spectrum.utils.getExplicitZIndex;
+  import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
 
 	[Event(name="change", type="org.apache.royale.events.Event")]
 	[Event(name="selectionChanged", type="org.apache.royale.events.Event")]
@@ -259,6 +260,13 @@ package com.unhurdle.spectrum
       dispatchEvent(new Event("beforeShow"));
       popover.x = popover.y = 0;
       popover.open = true;
+      COMPILE::JS
+      {
+        if(!anchorTracker){
+          anchorTracker = new AnchoredOverlayTracker(element, positionPopup);
+        }
+        anchorTracker.start();
+      }
       popover.list.focus();
       COMPILE::JS
       {
@@ -280,6 +288,7 @@ package com.unhurdle.spectrum
     }
     public var menu:Menu;
     public var popover:ComboBoxList;
+    private var anchorTracker:AnchoredOverlayTracker;
 
     private function handleMenuChange(ev:Event):void{
       closePopup();
@@ -296,6 +305,10 @@ package com.unhurdle.spectrum
 		}
     protected function closePopup():void{
       if(popover && popover.open){
+        COMPILE::JS
+        {
+          anchorTracker.stop();
+        }
   			popover.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 	  		this.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 		  	popover.topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);

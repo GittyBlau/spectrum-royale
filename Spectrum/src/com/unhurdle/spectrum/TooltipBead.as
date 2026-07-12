@@ -11,6 +11,7 @@ package com.unhurdle.spectrum
 	import org.apache.royale.utils.PointUtils;
 	import org.apache.royale.utils.UIUtils;
 	import com.unhurdle.spectrum.Tooltip;
+	import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
 	
 	public class TooltipBead implements IBead
 	{
@@ -45,6 +46,7 @@ package com.unhurdle.spectrum
 
 		protected var tt:Tooltip;
 		protected var host:IPopUpHost;
+		private var anchorTracker:AnchoredOverlayTracker;
 
 		private var _autoClose:Number = 2000;
 
@@ -183,7 +185,9 @@ package com.unhurdle.spectrum
 			(_strand as IEventDispatcher).addEventListener("mouseenter", rollOverHandler, false);
 			COMPILE::JS
 			{
-				(_strand as ISpectrumElement).element.addEventListener("pointerdown", handlePointerDown);
+				var element:HTMLElement = (_strand as ISpectrumElement).element;
+				element.addEventListener("pointerdown", handlePointerDown);
+				anchorTracker = new AnchoredOverlayTracker(element, positionTooltip);
 			}
 		}
 
@@ -307,6 +311,17 @@ package com.unhurdle.spectrum
 		protected function showTooltip():void {
 			createTooltip();
 			host.popUpParent.addElement(tt, false); // don't trigger a layout
+			COMPILE::JS
+			{
+				anchorTracker.start();
+			}
+			positionTooltip();
+		}
+
+		private function positionTooltip():void {
+			if(!tt){
+				return;
+			}
 			var ttWidth:Number = tt.width;
 			var pt:Point = determinePosition(_strand as IUIBase, tt);
 			tt.x = pt.x;
@@ -352,6 +367,10 @@ package com.unhurdle.spectrum
 		}
 		protected function closeTooltip():void{
 			clearTimeouts();
+			COMPILE::JS
+			{
+				anchorTracker.stop();
+			}
 			activeBead = null;
 			removeTooltip();
 			var comp:IUIBase = _strand as IUIBase;

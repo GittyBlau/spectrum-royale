@@ -19,6 +19,9 @@ package com.unhurdle.spectrum.interfaces
 
 		function get anchor():Rectangle;
 		function set anchor(value:Rectangle):void;
+
+		function get anchorTarget():ISpectrumElement;
+		function set anchorTarget(value:ISpectrumElement):void;
 		
 		function get applyText():String;
 		function set applyText(value:String):void;

@@ -3,6 +3,7 @@ package com.unhurdle.spectrum{
 	import com.unhurdle.spectrum.data.MenuItem;
 	import com.unhurdle.spectrum.includes.InputGroupInclude;
 	import com.unhurdle.spectrum.utils.getExplicitZIndex;
+	import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
 
 	import org.apache.royale.collections.ICollectionView;
 	import org.apache.royale.core.BeadViewBase;
@@ -94,6 +95,7 @@ package com.unhurdle.spectrum{
 		}
 		
 		private var comboHost:ComboBox;
+		private var anchorTracker:AnchoredOverlayTracker;
     private var model:IComboBoxModel;
 		private var _currentText:String;
 		/**
@@ -354,6 +356,13 @@ package com.unhurdle.spectrum{
 				comboHost.topMostEventDispatcher.addEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
 				_popup.open = true;
 				positionPopup();
+				COMPILE::JS
+				{
+					if(!anchorTracker){
+						anchorTracker = new AnchoredOverlayTracker(comboHost.element, positionPopup, _popup.element);
+					}
+					anchorTracker.start();
+				}
 				if (_filterPending)
 				{
 					updateFilteredDataProvider();
@@ -380,6 +389,12 @@ package com.unhurdle.spectrum{
 
 		private function closePopup():void{
 			if(_popup){
+				COMPILE::JS
+				{
+					if(anchorTracker){
+						anchorTracker.stop();
+					}
+				}
 				_popup.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 				comboHost.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 				comboHost.topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);

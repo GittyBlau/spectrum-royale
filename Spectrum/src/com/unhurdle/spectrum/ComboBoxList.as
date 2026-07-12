@@ -163,7 +163,7 @@ package com.unhurdle.spectrum
 			{
 				case "top":
 					if(spaceToTop >= minHeight || !spaceOnBottom){
-						positionPopoverTop(appBounds.bottom - componentBounds.top,spaceToTop);
+						positionPopoverTop(componentBounds.top,spaceToTop);
 					} else {
 						positionPopoverBottom(componentBounds,spaceToBottom);
 
@@ -173,7 +173,7 @@ package com.unhurdle.spectrum
 					if(spaceToBottom >= minHeight || spaceOnBottom){
 						positionPopoverBottom(componentBounds,spaceToBottom);
 					} else {
-						positionPopoverTop(appBounds.bottom - componentBounds.top,spaceToTop);
+						positionPopoverTop(componentBounds.top,spaceToTop);
 					}
 					break;
 			}
@@ -203,14 +203,13 @@ package com.unhurdle.spectrum
 				position = "bottom";
 			}
 		}
-		private function positionPopoverTop(bottom:Number,maxHeight:Number):void{
+		private function positionPopoverTop(anchorTop:Number,maxHeight:Number):void{
 			maxHeight -= 6;
 			var pxStr:String;
-			pxStr = bottom + "px";
-			setStyle("top","");
-			setStyle("bottom",pxStr);
+			setStyle("bottom","");
 			pxStr = maxHeight + "px";
 			setStyle("max-height",pxStr);
+			setStyle("top",(anchorTop - height) + "px");
 			if(position == "bottom"){
 				position = "top";
 			}

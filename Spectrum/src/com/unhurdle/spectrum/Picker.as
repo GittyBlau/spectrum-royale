@@ -22,6 +22,7 @@ package com.unhurdle.spectrum
 	import org.apache.royale.events.utils.WhitespaceKeys;
 	import org.apache.royale.events.utils.NavigationKeys;
 	import com.unhurdle.spectrum.utils.cloneNativeKeyboardEvent;
+	import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
 	import org.apache.royale.events.utils.UIKeys;
 	import org.apache.royale.core.IItemRendererOwnerView;
 	/**
@@ -77,6 +78,7 @@ package com.unhurdle.spectrum
 			return elem;
 		}
 		public var popover:ComboBoxList;
+		private var anchorTracker:AnchoredOverlayTracker;
 		public function get menu():Menu{
 			return popover.list;
 		}
@@ -113,6 +115,13 @@ package com.unhurdle.spectrum
 				zIndexSet = true;
 			}
 			popover.open = true;
+			COMPILE::JS
+			{
+				if(!anchorTracker){
+					anchorTracker = new AnchoredOverlayTracker(element, positionPopup);
+				}
+				anchorTracker.start();
+			}
 			popover.filterFunction = filterFunction;
 			if(searchable){
 				popover.search.input.focus();
@@ -126,6 +135,10 @@ package com.unhurdle.spectrum
 		}
 		private function closePopup():void{
 			if(popover && popover.open){
+				COMPILE::JS
+				{
+					anchorTracker.stop();
+				}
 				popover.open = false;
 			}
 		}

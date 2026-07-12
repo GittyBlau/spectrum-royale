@@ -6,6 +6,7 @@ package com.unhurdle.spectrum
 	import org.apache.royale.geom.Rectangle;
 	import org.apache.royale.utils.DisplayUtils;
 	import org.apache.royale.geom.Point;
+	import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
 
 	[Event(name="openChanged", type="org.apache.royale.events.Event")]
 
@@ -43,6 +44,8 @@ package com.unhurdle.spectrum
 		}
 
 		private var _anchor:Rectangle;
+		private var _anchorTarget:ISpectrumElement;
+		private var anchorTracker:AnchoredOverlayTracker;
 		/**
 		 * The anchor is a rectangle in global units
 		 * If the anchor is set, the popover will position itself and its tip relative to that.
@@ -60,6 +63,35 @@ package com.unhurdle.spectrum
 						positionTip();
 					}
 				}
+			}
+		}
+
+		public function get anchorTarget():ISpectrumElement{
+			return _anchorTarget;
+		}
+
+		public function set anchorTarget(value:ISpectrumElement):void{
+			if(anchorTracker){
+				anchorTracker.stop();
+			}
+			_anchorTarget = value;
+			COMPILE::JS
+			{
+				if(value){
+					anchorTracker = new AnchoredOverlayTracker(value.element, updateAnchor);
+					updateAnchor();
+					if(open){
+						anchorTracker.start();
+					}
+				} else {
+					anchorTracker = null;
+				}
+			}
+		}
+
+		private function updateAnchor():void{
+			if(_anchorTarget){
+				anchor = DisplayUtils.getScreenBoundingRect(_anchorTarget);
 			}
 		}
 
@@ -84,7 +116,13 @@ package com.unhurdle.spectrum
 					setAttribute("dir", Application.current.dir);
 					if(value){
 						host.addElement(this);
+						if(anchorTracker){
+							anchorTracker.start();
+						}
 					} else {
+						if(anchorTracker){
+							anchorTracker.stop();
+						}
 						host.removeElement(this);
 					}
 				}
