@@ -33,6 +33,7 @@ package com.unhurdle.spectrum
 		protected var valueNode:TextNode;
 
 		private var _disabled:Boolean;
+		protected var usesPointerDrag:Boolean;
 
 		public function get disabled():Boolean
 		{
@@ -46,10 +47,12 @@ package com.unhurdle.spectrum
 				enableDisableInput(value);
 				COMPILE::JS
 				{
-					if(value){
-						element.removeEventListener('mousedown', onMouseDown);
-					} else {
-						element.addEventListener('mousedown', onMouseDown);
+					if(!usesPointerDrag){
+						if(value){
+							element.removeEventListener('mousedown', onMouseDown);
+						} else {
+							element.addEventListener('mousedown', onMouseDown);
+						}
 					}
 				}
 			}
