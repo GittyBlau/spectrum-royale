@@ -11,6 +11,7 @@ package com.unhurdle.spectrum.controllers
 	import org.apache.royale.events.IEventDispatcher;
 	import org.apache.royale.events.ItemClickedEvent;
 	import org.apache.royale.utils.getSelectionRenderBead;
+	import com.unhurdle.spectrum.ISpectrumElement;
 
 	
 	public class ItemRendererMouseController implements IBeadController
@@ -20,28 +21,98 @@ package com.unhurdle.spectrum.controllers
 		{
 		}
 		
-    private var renderer:ISelectableItemRenderer;
 		private var _strand:IStrand;
+		COMPILE::JS
+		private var pointerId:Number = -1;
 		
 
 		public function set strand(value:IStrand):void
 		{
 			_strand = value;
-      renderer = value as ISelectableItemRenderer;
-					
-			
-			// COMPILE::SWF {
-	    //         renderer.addEventListener(MouseEvent.ROLL_OVER, rollOverHandler);
-	    //         renderer.addEventListener(MouseEvent.ROLL_OUT, rollOutHandler);
-			// 	renderer.addEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
-			// 	renderer.addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
-			// }
-				
 			var host:IEventDispatcher = _strand as IEventDispatcher;
-			host.addEventListener("mouseover", handleMouseOver);
-			host.addEventListener("mouseout", handleMouseOut);
-			host.addEventListener("mousedown", handleMouseDown);
 			host.addEventListener("click", handleMouseUp);
+			COMPILE::SWF
+			{
+				host.addEventListener("mouseover", handleMouseOver);
+				host.addEventListener("mouseout", handleMouseOut);
+				host.addEventListener("mousedown", handleMouseDown);
+			}
+			COMPILE::JS
+			{
+				var element:HTMLElement = (_strand as ISpectrumElement).element;
+				element.addEventListener("pointerenter", handlePointerEnter);
+				element.addEventListener("pointerleave", handlePointerLeave);
+				element.addEventListener("pointerdown", handlePointerDown);
+			}
+		}
+
+		COMPILE::JS
+		private function handlePointerEnter(event:PointerEvent):void
+		{
+			if(event.pointerType != "touch"){
+				dispatchRendererEvent("itemRollOver");
+			}
+		}
+
+		COMPILE::JS
+		private function handlePointerLeave(event:PointerEvent):void
+		{
+			if(event.pointerType != "touch"){
+				dispatchRendererEvent("itemRollOut");
+			}
+		}
+
+		COMPILE::JS
+		private function handlePointerDown(event:PointerEvent):void
+		{
+			if(pointerId >= 0 || event.isPrimary === false || event.button != 0){
+				return;
+			}
+			pointerId = event.pointerId;
+			setDown(true);
+			var element:HTMLElement = (_strand as ISpectrumElement).element;
+			element.addEventListener("pointerup", handlePointerEnd);
+			element.addEventListener("pointercancel", handlePointerEnd);
+			element.addEventListener("lostpointercapture", handlePointerEnd);
+			element["setPointerCapture"](pointerId);
+		}
+
+		COMPILE::JS
+		private function handlePointerEnd(event:PointerEvent):void
+		{
+			if(event.pointerId != pointerId){
+				return;
+			}
+			var activePointerId:Number = pointerId;
+			pointerId = -1;
+			var element:HTMLElement = (_strand as ISpectrumElement).element;
+			element.removeEventListener("pointerup", handlePointerEnd);
+			element.removeEventListener("pointercancel", handlePointerEnd);
+			element.removeEventListener("lostpointercapture", handlePointerEnd);
+			setDown(false);
+			if(element["hasPointerCapture"](activePointerId)){
+				element["releasePointerCapture"](activePointerId);
+			}
+		}
+
+		private function dispatchRendererEvent(type:String):void
+		{
+			var target:IItemRenderer = _strand as IItemRenderer;
+			if(target){
+				target.dispatchEvent(new Event(type,true));
+			}
+		}
+
+		private function setDown(value:Boolean):void
+		{
+			var target:IItemRenderer = _strand as IItemRenderer;
+			var selectionBead:ISelectableItemRenderer = getSelectionRenderBead(target);
+			if(selectionBead){
+				selectionBead.down = value;
+				if(value){
+					selectionBead.hovered = false;
+				}
+			}
 		}
 		
 	
@@ -77,15 +148,7 @@ package com.unhurdle.spectrum.controllers
 		 */
 		protected function handleMouseDown(event:Event):void
 		{
-			var target:IItemRenderer = event.currentTarget as IItemRenderer;
-			if (target)
-			{
-				var selectionBead:ISelectableItemRenderer = getSelectionRenderBead(target);
-				if(selectionBead){
-					selectionBead.down = true;
-					selectionBead.hovered = false;
-				}
-			}
+			setDown(true);
 		}
 		
 
