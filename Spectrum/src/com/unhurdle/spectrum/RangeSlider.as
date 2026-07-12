@@ -166,7 +166,7 @@ package com.unhurdle.spectrum
     }
 
     COMPILE::JS
-    private function handlePointerStart(event:*):Boolean{
+    private function handlePointerStart(event:PointerEvent):Boolean{
       if(event.target === input || event.target === secondInput){
         return false;
       }
@@ -187,7 +187,7 @@ package com.unhurdle.spectrum
     }
 
     COMPILE::JS
-    private function handlePointerEnd(event:*, cancelled:Boolean):void{
+    private function handlePointerEnd():void{
       if(handle){
         handle.classList.remove("is-dragged");
       }
@@ -195,7 +195,7 @@ package com.unhurdle.spectrum
     }
 
     COMPILE::JS
-    private function handlePointerMove(event:*):void{
+    private function handlePointerMove(event:PointerEvent):void{
       if(disabled || !handle){
         return;
       }
@@ -232,7 +232,7 @@ package com.unhurdle.spectrum
     }
 
     COMPILE::JS
-    private function handleNativeInput(event:*):void{
+    private function handleNativeInput(event:InputEvent):void{
       if(event.target === input && value > secondValue){
         input.value = secondInput.value;
       } else if(event.target === secondInput && secondValue < value){

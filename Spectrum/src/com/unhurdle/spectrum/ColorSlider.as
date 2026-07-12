@@ -179,7 +179,7 @@ package com.unhurdle.spectrum
 		}
 
 		COMPILE::JS
-		private function handlePointerStart(event:*):Boolean {
+		private function handlePointerStart(event:PointerEvent):Boolean {
 			if(disabled || event.target === input){
 				return false;
 			}
@@ -188,12 +188,12 @@ package com.unhurdle.spectrum
 		}
 
 		COMPILE::JS
-		private function handlePointerEnd(event:*, cancelled:Boolean):void {
+		private function handlePointerEnd():void {
 			handle.toggle("is-dragged",false);
 		}
 
 		COMPILE::JS
-		private function handlePointerMove(event:*):void {
+		private function handlePointerMove(event:PointerEvent):void {
 			if(disabled){
 				return;
 			}
@@ -201,7 +201,7 @@ package com.unhurdle.spectrum
 		}
 
 		COMPILE::JS
-		private function handleNativeInput(event:*):void {
+		private function handleNativeInput():void {
 			updateFromPercent(Number(input.value));
 		}
 
@@ -224,7 +224,7 @@ package com.unhurdle.spectrum
 		}
 
 		COMPILE::JS
-		private function getPointerPercentagePosition(event:*):Number{
+		private function getPointerPercentagePosition(event:PointerEvent):Number{
 			var bounds:ClientRect = element.getBoundingClientRect();
 			if(vertical){
 				if(bounds.height == 0){

@@ -4,13 +4,12 @@ package com.unhurdle.spectrum
 	{
 		import org.apache.royale.core.WrappedHTMLElement;
 	}
+	import com.unhurdle.spectrum.utils.PointerDrag;
 	import com.unhurdle.spectrum.interfaces.IRGBA;
 	import org.apache.royale.events.ValueEvent;
-	import org.apache.royale.geom.Point;
 	import com.unhurdle.spectrum.data.RGBColor;
 	import org.apache.royale.utils.HSV;
 	import org.apache.royale.utils.rgbToHsv;
-	import org.apache.royale.utils.number.getPercent;
 	import org.apache.royale.utils.number.pinValue;
 
 	[Event(name="colorChanged", type="org.apache.royale.events.ValueEvent")]
@@ -91,15 +90,15 @@ package com.unhurdle.spectrum
 		}
 
 		private var handle:ColorHandle;
+		private var pointerDrag:PointerDrag;
 
 		private var addedOnce:Boolean;
 		
 		COMPILE::JS
 		override public function addedToParent():void{
 			super.addedToParent();
-			//TODO disabled?
 			if(!addedOnce){
-				addEventListener('mousedown', onMouseDown);
+				pointerDrag = new PointerDrag(element, handlePointerStart, handlePointerMove, handlePointerEnd, "none");
 			}
 			addedOnce = true;
 			drawCanvas();
@@ -118,61 +117,43 @@ package com.unhurdle.spectrum
 		// }
 
 		COMPILE::JS
-		protected function onMouseDown(e:MouseEvent):void {
+		private function handlePointerStart(event:PointerEvent):Boolean {
 			handle.toggle("is-dragged",true);
-			onMouseMove(e);
-			window.addEventListener('mouseup', onMouseUp);
-			window.addEventListener('mousemove', onMouseMove);
+			return true;
 		}
 		
 		COMPILE::JS
-		protected function onMouseUp():void {
+		private function handlePointerEnd():void {
 			handle.toggle("is-dragged",false);
-			window.removeEventListener('mouseup', onMouseUp);
-			window.removeEventListener('mousemove', onMouseMove);
 		}
 
 		COMPILE::JS
-		protected function onMouseMove(e:MouseEvent):void {
-			//TODO disabled?
-			// if(disabled){
-			// 	return;
-			// }
-			calculateColor(getClientOffset(e));
+		private function handlePointerMove(event:PointerEvent):void {
+			calculateColor(event);
 		}
 
 		COMPILE::JS
-		private function calculateColor(point:Point):void{
+		private function calculateColor(event:PointerEvent):void{
 			// if(!imageData){
 			// 	getImageData();
 			// }
     // locate index of current pixel
-    	// var i:int = (point.y * imageData.width + point.x) * 4;
+			// var i:int = (y * imageData.width + x) * 4;
 			// var data:Uint8ClampedArray = imageData.data;
 			// handle.appliedColor = new RGBColor([data[i],data[i+1],data[i+2],data[i+3]]);
-			hsv.s = getPercent(point.x,width);
+			var clientRect:ClientRect = canvas.getBoundingClientRect();
+			if(clientRect.width == 0 || clientRect.height == 0){
+				return;
+			}
+			hsv.s = pinValue(event.clientX - clientRect.left,0,clientRect.width) / clientRect.width * 100;
 			// The v scale goes bottom to top so we need to inverse the value.
-			hsv.v = 100 - getPercent(point.y,height);
+			hsv.v = 100 - pinValue(event.clientY - clientRect.top,0,clientRect.height) / clientRect.height * 100;
 			positionHandle();
 			// setHandleColor();
 			dispatchEvent(new ValueEvent("colorChanged",appliedColor));
 		}
 		private function setHandleColor():void{
 			handle.appliedColor = RGBColor.fromHSV(hsv);
-		}
-
-		COMPILE::JS
-		private function getClientOffset(event:MouseEvent):Point{
-			if(event["touches"]){
-				event = event["touches"][0];
-			}
-			var clientRect:ClientRect = canvas.getBoundingClientRect();
-			var point:Point = new Point(event.clientX,event.clientY);
-			point.x -= clientRect.left;
-			point.x = pinValue(point.x,0,width);
-			point.y -= clientRect.top;
-			point.y = pinValue(point.y,0,height);
-			return point;
 		}
 
 		COMPILE::SWF

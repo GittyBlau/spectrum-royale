@@ -71,7 +71,7 @@ package com.unhurdle.spectrum.utils
         }
 
         COMPILE::JS
-        private function handlePointerDown(event:*):void
+        private function handlePointerDown(event:PointerEvent):void
         {
             if (!_enabled || _pointerId >= 0 || event.isPrimary === false || event.button != 0) {
                 return;
@@ -89,7 +89,7 @@ package com.unhurdle.spectrum.utils
         }
 
         COMPILE::JS
-        private function handlePointerMove(event:*):void
+        private function handlePointerMove(event:PointerEvent):void
         {
             if (event.pointerId == _pointerId) {
                 _moveHandler(event);
@@ -97,26 +97,26 @@ package com.unhurdle.spectrum.utils
         }
 
         COMPILE::JS
-        private function handlePointerUp(event:*):void
+        private function handlePointerUp(event:PointerEvent):void
         {
             if (event.pointerId == _pointerId) {
-                finish(event, false);
+                finish();
             }
         }
 
         COMPILE::JS
-        private function handlePointerCancel(event:*):void
+        private function handlePointerCancel(event:PointerEvent):void
         {
             if (event.pointerId == _pointerId) {
-                finish(event, true);
+                finish();
             }
         }
 
         COMPILE::JS
-        private function handleLostPointerCapture(event:*):void
+        private function handleLostPointerCapture(event:PointerEvent):void
         {
             if (event.pointerId == _pointerId) {
-                finish(event, true);
+                finish();
             }
         }
 
@@ -124,12 +124,12 @@ package com.unhurdle.spectrum.utils
         private function cancel():void
         {
             if (_pointerId >= 0) {
-                finish(null, true);
+                finish();
             }
         }
 
         COMPILE::JS
-        private function finish(event:*, cancelled:Boolean):void
+        private function finish():void
         {
             var pointerId:Number = _pointerId;
             _pointerId = -1;
@@ -140,7 +140,7 @@ package com.unhurdle.spectrum.utils
             if (_target["hasPointerCapture"](pointerId)) {
                 _target["releasePointerCapture"](pointerId);
             }
-            _endHandler(event, cancelled);
+            _endHandler();
         }
     }
 }

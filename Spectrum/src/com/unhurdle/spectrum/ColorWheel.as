@@ -3,6 +3,7 @@ package com.unhurdle.spectrum
   COMPILE::JS{
     import org.apache.royale.core.WrappedHTMLElement;
   }
+  import com.unhurdle.spectrum.utils.PointerDrag;
   import org.apache.royale.events.ValueEvent;
   import com.unhurdle.spectrum.data.RGBColor;
 
@@ -21,6 +22,7 @@ package com.unhurdle.spectrum
     private var handle:ColorHandle;
 		private var gradient:HTMLElement;
 		private var input:HTMLInputElement;
+    private var pointerDrag:PointerDrag;
 
     COMPILE::JS
     override protected function createElement():WrappedHTMLElement{
@@ -31,10 +33,12 @@ package com.unhurdle.spectrum
         addElement(handle);
         input = newElement("input",appendSelector("-slider")) as HTMLInputElement;
         input.type = "range";
-        input.step = "`";
+        input.step = "1";
         input.min = "0";
         input.max = "360";
+        input.value = "0";
         elem.appendChild(input);
+        input.addEventListener("input", handleNativeInput);
         return elem;
     }
 
@@ -56,9 +60,10 @@ package com.unhurdle.spectrum
 
     private var ringSize:Number = 57;
     private var canvas:*;
+    private var addedOnce:Boolean;
     override public function addedToParent():void{
       super.addedToParent();
-      canvas = document.querySelector('canvas.spectrum-ColorWheel-gradient');
+      canvas = gradient;
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
       var context:* = canvas.getContext('2d');
@@ -75,68 +80,51 @@ package com.unhurdle.spectrum
         context.lineTo(centerX + centerX * Math.cos(rad), centerY + centerY * Math.sin(rad));
         context.stroke();
       }
-      // if(!disabled){
-      addEventListener('mousedown', onMouseDown);
-      handle.addEventListener("colorChanged",function(ev:ValueEvent):void{
-        dispatchEvent(new ValueEvent("colorChanged",ev));
-      });
-      // }
-      COMPILE::JS{
-        handle.element.style.left = (width - ((width/2 - ringSize)/2)) + "px";
-        handle.element.style.top = height/2 + "px";
+      if(!addedOnce){
+        pointerDrag = new PointerDrag(element, handlePointerStart, handlePointerMove, handlePointerEnd, "none");
+        handle.addEventListener("colorChanged",function(ev:ValueEvent):void{
+          dispatchEvent(new ValueEvent("colorChanged",ev));
+        });
+        addedOnce = true;
       }
+      updateFromHue(Number(input.value));
     }
 
-		// Element interaction
-		protected function onMouseDown(e:MouseEvent):void {
-			onMouseMove(e);
-			gradient.addEventListener('mouseup', onMouseUp);
-			gradient.addEventListener('mousemove', onMouseMove);
+    private function handlePointerStart(event:PointerEvent):Boolean {
+			if(event.target === input){
+				return false;
+			}
+			handle.toggle("is-dragged",true);
+			return true;
 		}
 
-		protected function onMouseUp():void {
-			gradient.removeEventListener('mouseup', onMouseUp);
-			gradient.removeEventListener('mousemove', onMouseMove);
+    private function handlePointerEnd():void {
+			handle.toggle("is-dragged",false);
 		}
 
-    private function getPosition(el:*):Object {
-      var xPos:Number = 0;
-      var yPos:Number = 0;
-    
-      while (el) {
-        if (el.tagName == "BODY") {
-          // deal with browser quirks with body/window/document and page scroll
-          var xScroll:Number = el.scrollLeft || document.documentElement.scrollLeft;
-          var yScroll:Number = el.scrollTop || document.documentElement.scrollTop;
-    
-          xPos += (el.offsetLeft - xScroll + el.clientLeft);
-          yPos += (el.offsetTop - yScroll + el.clientTop);
-        } else {
-          // for all other non-BODY elements
-          xPos += (el.offsetLeft - el.scrollLeft + el.clientLeft);
-          yPos += (el.offsetTop - el.scrollTop + el.clientTop);
-        }
-    
-        el = el.offsetParent;
+    private function handlePointerMove(event:PointerEvent):void {
+      var bounds:ClientRect = gradient.getBoundingClientRect();
+      var radians:Number = Math.atan2(event.clientY - (bounds.top + bounds.height / 2), event.clientX - (bounds.left + bounds.width / 2));
+      var hue:Number = radians * 180 / Math.PI;
+      if(hue < 0){
+        hue += 360;
       }
-      return {
-        x: xPos,
-        y: yPos
-      };
+      updateFromHue(hue);
     }
-    protected function onMouseMove(e:MouseEvent):void {
-      // if(disabled){
-      //   return;
-      // }
-      var elem:HTMLElement = element as HTMLElement;
-      var position:Object = getPosition(elem);
+
+    private function handleNativeInput():void {
+      updateFromHue(Number(input.value));
+    }
+
+    private function updateFromHue(hue:Number):void {
       var gradWidth:Number = gradient.offsetWidth;
       var gradHeight:Number = gradient.offsetHeight;
-      var x:Number = gradWidth/2 + position.x;
-      var y:Number = gradHeight/2 + position.y;
-      var a:Number = e.clientX;
-      var b:Number = e.clientY;
-      var radians:Number = Math.atan2(b-y,a-x);
+      if(gradWidth == 0 || gradHeight == 0){
+        return;
+      }
+      hue = (hue + 360) % 360;
+      input.value = "" + hue;
+      var radians:Number = hue * Math.PI / 180;
       COMPILE::JS{
         var left:Number = (Math.cos(radians) * (gradWidth/2 - ((gradWidth/2 - ringSize)/2)) + gradWidth/2);
         var top:Number = (Math.sin(radians) * (gradHeight/2 - ((gradHeight/2 - ringSize)/2)) + gradHeight/2);
