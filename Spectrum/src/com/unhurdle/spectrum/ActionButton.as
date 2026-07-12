@@ -26,7 +26,10 @@ package com.unhurdle.spectrum
       toggle(valueToSelector("primary"),false);
       addEventListener('click',elementClickedForMenu,true);
       addEventListener('click',elementClicked);
-      addEventListener(MouseEvent.MOUSE_DOWN,handleMouseDown);
+      COMPILE::JS
+      {
+        element.addEventListener("pointerdown",handlePointerDown);
+      }
     }
     override protected function getSelector():String{
       return ActionButtonInclude.getSelector();
@@ -48,6 +51,12 @@ package com.unhurdle.spectrum
         addElement(flyOutIconHolder);
         timer = new Timer(1000,1);
         timer.addEventListener(Timer.TIMER,onTimer);
+        COMPILE::JS
+        {
+          element.style.userSelect = "none";
+          element.style.webkitUserSelect = "none";
+          element.style.setProperty("-webkit-touch-callout","none");
+        }
 
       }
     }
@@ -180,18 +189,36 @@ package com.unhurdle.spectrum
       }
     }
 
-    private function handleMouseDown(ev:*):void{
+    COMPILE::JS
+    private var holdPointerId:Number = -1;
+
+    COMPILE::JS
+    private function handlePointerDown(event:PointerEvent):void{
       if(!dataProvider || !dataProvider.length){
         return;
       }
-  		window.addEventListener('mouseup', handleMouseUp);
+      if(holdPointerId >= 0 || event.isPrimary === false || event.button != 0){
+        return;
+      }
+      holdPointerId = event.pointerId;
+		element.addEventListener("pointerup",handlePointerEnd);
+		element.addEventListener("pointercancel",handlePointerEnd);
+		element.addEventListener("lostpointercapture",handlePointerEnd);
+		element["setPointerCapture"](holdPointerId);
       if(timer){
         timer.start();
       }
     }
 
-    private function handleMouseUp(ev:*):void{
-  		window.removeEventListener('mouseup', handleMouseUp);
+    COMPILE::JS
+    private function handlePointerEnd(event:PointerEvent):void{
+      if(event.pointerId != holdPointerId){
+        return;
+      }
+		element.removeEventListener("pointerup",handlePointerEnd);
+		element.removeEventListener("pointercancel",handlePointerEnd);
+		element.removeEventListener("lostpointercapture",handlePointerEnd);
+      holdPointerId = -1;
       if(timer){
         timer.reset();
       }
@@ -199,7 +226,7 @@ package com.unhurdle.spectrum
 
     private var timer:Timer;
 
-    private function onTimer(ev:*):void{
+    private function onTimer(ev:Event):void{
       timer.reset();
       showMenu();
     }
