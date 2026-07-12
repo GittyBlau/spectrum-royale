@@ -3,20 +3,20 @@ package com.unhurdle.spectrum
   COMPILE::JS{
     import org.apache.royale.core.WrappedHTMLElement;
   }
-  import org.apache.royale.utils.PointUtils;
-  import org.apache.royale.geom.Point;
-  import org.apache.royale.events.MouseEvent;
+  import com.unhurdle.spectrum.utils.PointerDrag;
+  import org.apache.royale.events.Event;
   import org.apache.royale.utils.number.pinValue;
-  import org.apache.royale.utils.number.getPercent;
   public class RampSlider extends SliderBase
   {
     public function RampSlider()
     {
       super();
+      usesPointerDrag = true;
       typeNames = getSelector() + " " + valueToSelector("ramp");
     }
 
     private var handle:HTMLElement;
+    private var pointerDrag:PointerDrag;
     
     COMPILE::JS
     override protected function createElement():WrappedHTMLElement{
@@ -42,11 +42,15 @@ package com.unhurdle.spectrum
         handle.appendChild(input);
         controlsContainer.appendChild(handle);
         elem.appendChild(controlsContainer);
-        element.addEventListener('mousedown', onMouseDown);
+        input.addEventListener("input", handleNativeInput);
+        pointerDrag = new PointerDrag(element, handlePointerStart, handlePointerMove, handlePointerEnd, "pan-y");
         return elem;
     }
     
     override protected function positionElements():void{
+			var range:Number = max - min;
+			var percent:Number = range == 0 ? 0 : pinValue((value - min) / range * 100, 0, 100);
+			handle.style.left = percent + "%";
 		}
 
     public function get value():Number
@@ -69,25 +73,57 @@ package com.unhurdle.spectrum
 		}    
 		override protected function enableDisableInput(value:Boolean):void{
 			input.disabled = value;
+			COMPILE::JS
+			{
+				pointerDrag.enabled = !value;
+			}
 		}
+
     COMPILE::JS
-    override protected function onMouseMove(e:MouseEvent):void {
+    private function handlePointerStart(event:*):Boolean {
+      if(event.target === input){
+        return false;
+      }
+      handle.classList.add("is-dragged");
+      return true;
+    }
+
+    COMPILE::JS
+    private function handlePointerMove(event:*):void {
       if(disabled){
         return;
       }
-			var sliderOffsetWidth:Number = element.offsetWidth;
-      var localX:Number = PointUtils.globalToLocal(new Point(e.clientX,e.clientY),this).x;
-			var x:Number = pinValue(localX,0,sliderOffsetWidth);
-			var percent:Number = getPercent(x,sliderOffsetWidth);
-			var val:Number = (max-min) / (100/percent) + min;
-			var stepVal:Number = step;
-			var rem:Number = val % stepVal;
-			val = val - rem;
-			if (rem > (stepVal/2)){
-		    val += stepVal;
+      var bounds:ClientRect = element.getBoundingClientRect();
+      if(bounds.width == 0){
+        return;
+      }
+			var newValue:Number = getPositionValue(event.clientX - bounds.left, bounds.width);
+			if(value != newValue){
+				value = newValue;
+				dispatchEvent(new Event("change"));
 			}
-			value = val;
-      handle.style.left = percent + "%";
+    }
+
+    COMPILE::JS
+    private function handlePointerEnd(event:*, cancelled:Boolean):void {
+      handle.classList.remove("is-dragged");
+    }
+
+    COMPILE::JS
+    private function handleNativeInput(event:*):void {
+      positionElements();
+			if(valueNode){
+				valueNode.text = input.value;
+			}
+			dispatchEvent(new Event("change"));
+    }
+
+    private function getPositionValue(position:Number, width:Number):Number {
+			var newValue:Number = min + (max - min) * pinValue(position, 0, width) / width;
+			if(step > 0){
+				newValue = min + Math.round((newValue - min) / step) * step;
+			}
+			return pinValue(newValue, min, max);
     }
   }
 }

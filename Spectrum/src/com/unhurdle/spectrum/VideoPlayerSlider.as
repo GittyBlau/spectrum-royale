@@ -3,16 +3,15 @@ package com.unhurdle.spectrum
   COMPILE::JS{
     import org.apache.royale.core.WrappedHTMLElement;
   }
-  import org.apache.royale.utils.PointUtils;
-  import org.apache.royale.geom.Point;
-  import org.apache.royale.events.MouseEvent;
+  import com.unhurdle.spectrum.utils.PointerDrag;
+  import org.apache.royale.events.Event;
   import org.apache.royale.utils.number.pinValue;
-  import org.apache.royale.utils.number.getPercent;
   public class VideoPlayerSlider extends SliderBase
   {
     public function VideoPlayerSlider()
     {
       super();
+      usesPointerDrag = true;
     }
     override protected function getSelector():String{
       return "spectrum-Slider";
@@ -23,6 +22,7 @@ package com.unhurdle.spectrum
    	private var rightTrack:HTMLElement;
 		private var leftBuffer:HTMLElement;
   	private var rightBuffer:HTMLElement;
+    private var pointerDrag:PointerDrag;
     
     COMPILE::JS
     override protected function createElement():WrappedHTMLElement{
@@ -56,7 +56,8 @@ package com.unhurdle.spectrum
       controlsContainer.appendChild(rightTrack);
 
       elem.appendChild(controlsContainer);
-      element.addEventListener('mousedown', onMouseDown);
+  input.addEventListener("input", handleNativeInput);
+  pointerDrag = new PointerDrag(element, handlePointerStart, handlePointerMove, handlePointerEnd, "pan-y");
       return elem;
     }
     public function get value():Number
@@ -79,26 +80,68 @@ package com.unhurdle.spectrum
 			return input.value;
 		}
     override protected function positionElements():void{
-        var percent:Number = this.value / (max - min) * 100;
+      var range:Number = max - min;
+      var percent:Number = range == 0 ? 0 : pinValue((value - min) / range * 100, 0, 100);
         handle.style.left = percent + "%";
       if (leftTrack && rightTrack) {
         leftTrack.style.width = percent + '%';
         rightTrack.style.width = (100 - percent) + '%';
       }
+      positionBuffer(percent);
     }
-    COMPILE::JS
-    override protected function onMouseMove(e:MouseEvent):void {
-      var sliderOffsetWidth:Number = element.offsetWidth;
-      var localX:Number = PointUtils.globalToLocal(new Point(e.clientX,e.clientY),this).x;
-      var x:Number = pinValue(localX,0,sliderOffsetWidth);
-      var percent:Number = getPercent(x,sliderOffsetWidth);
-      var val:Number = (max-min) / (100/percent) + min;
-      var stepVal:Number = step;
-      var rem:Number = val % stepVal;
-      val = val - rem;
-      if (rem > (stepVal/2)){
-        val += stepVal;
+
+    override protected function enableDisableInput(value:Boolean):void{
+      input.disabled = value;
+      COMPILE::JS
+      {
+        pointerDrag.enabled = !value;
       }
+    }
+
+    COMPILE::JS
+    private function handlePointerStart(event:*):Boolean {
+      if(event.target === input){
+        return false;
+      }
+      handle.classList.add("is-dragged");
+      return true;
+    }
+
+    COMPILE::JS
+    private function handlePointerMove(event:*):void {
+      if(disabled){
+        return;
+      }
+      var bounds:ClientRect = element.getBoundingClientRect();
+      if(bounds.width == 0){
+        return;
+      }
+      var newValue:Number = min + (max - min) * pinValue(event.clientX - bounds.left, 0, bounds.width) / bounds.width;
+      if(step > 0){
+        newValue = min + Math.round((newValue - min) / step) * step;
+      }
+      newValue = pinValue(newValue, min, max);
+      if(value != newValue){
+        value = newValue;
+        dispatchEvent(new Event("change"));
+      }
+    }
+
+    COMPILE::JS
+    private function handlePointerEnd(event:*, cancelled:Boolean):void {
+      handle.classList.remove("is-dragged");
+    }
+
+    COMPILE::JS
+    private function handleNativeInput(event:*):void {
+      positionElements();
+      if(valueNode){
+        valueNode.text = input.value;
+      }
+      dispatchEvent(new Event("change"));
+    }
+
+    private function positionBuffer(percent:Number):void {
       var bufferedAmount:Number = 50; //need to be buffers long...
 
       if (percent >= bufferedAmount) {
@@ -113,8 +156,6 @@ package com.unhurdle.spectrum
         rightBuffer.style.left = percent + '%';
         rightBuffer.style.right = (100 - bufferedAmount) + '%';
       }
-      value = val;
-      handle.style.left = leftBuffer.style.width + '';
     }
   }
 }
