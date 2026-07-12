@@ -3,16 +3,15 @@ package com.unhurdle.spectrum
   COMPILE::JS{
     import org.apache.royale.core.WrappedHTMLElement;
   }
-  import org.apache.royale.events.MouseEvent;
-  import org.apache.royale.utils.PointUtils;
-  import org.apache.royale.geom.Point;
+  import com.unhurdle.spectrum.utils.PointerDrag;
+  import org.apache.royale.events.Event;
   import org.apache.royale.utils.number.pinValue;
-  import org.apache.royale.utils.number.getPercent;
   public class RangeSlider extends SliderBase
   {
     public function RangeSlider()
     {
       super();
+      usesPointerDrag = true;
       typeNames = getSelector() + " "+ valueToSelector("range");
     }
     override protected function getSelector():String{
@@ -24,6 +23,30 @@ package com.unhurdle.spectrum
   	private var rightTrack:HTMLElement;
   	private var middleTrack:HTMLElement;
   	private var secondInput:HTMLInputElement;
+    private var pointerDrag:PointerDrag;
+
+    public function get value():Number
+    {
+      return Number(input.value);
+    }
+
+    public function set value(newValue:Number):void
+    {
+      input.value = "" + pinValue(newValue, min, Math.min(max, secondValue));
+      positionElements();
+    }
+
+    public function get secondValue():Number
+    {
+      return Number(secondInput.value);
+    }
+
+    public function set secondValue(newValue:Number):void
+    {
+      secondInput.value = "" + pinValue(newValue, Math.max(secondMin, value), secondMax);
+      positionElements();
+    }
+
     public function get secondStep():Number
     {
     	return Number(secondInput.step);
@@ -60,6 +83,10 @@ package com.unhurdle.spectrum
 		override protected function enableDisableInput(value:Boolean):void{
 			input.disabled = value;
       secondInput.disabled = value;
+      COMPILE::JS
+      {
+        pointerDrag.enabled = !value;
+      }
 		}
 
     COMPILE::JS
@@ -80,6 +107,7 @@ package com.unhurdle.spectrum
         input.type = "range";
 				input.step = "2";
         max = 100;
+        input.value = "20";
         leftHandle.appendChild(input);
         controlsContainer.appendChild(leftHandle);
         //second track
@@ -95,6 +123,7 @@ package com.unhurdle.spectrum
         secondInput.type = "range";
 				secondInput.step = "2";
         secondMax = 100;
+        secondInput.value = "60";
         rightHandle.appendChild(secondInput);
         controlsContainer.appendChild(rightHandle);
         //third track
@@ -103,76 +132,114 @@ package com.unhurdle.spectrum
         controlsContainer.appendChild(rightTrack);
 
         elem.appendChild(controlsContainer);
-    		element.addEventListener('mousedown', onMouseDown);
-            return elem;
+      input.addEventListener("input", handleNativeInput);
+      secondInput.addEventListener("input", handleNativeInput);
+      pointerDrag = new PointerDrag(element, handlePointerStart, handlePointerMove, handlePointerEnd, "pan-y");
+        return elem;
     }
     override public function addedToParent():void{
 			super.addedToParent();
 			positionElements();
     }
      override protected function getValue():String{
-			// override in subclass
-      var startPercent:Number = parseFloat(leftHandle.style.left);
-      var endPercent:Number = parseFloat(rightHandle.style.left);
-			return "" + startPercent + " - " + endPercent;
+			return "" + value + " - " + secondValue;
 		}    
     override protected function positionElements():void{
-				// var leftPercent:Number = this.leftValue / (max - min) * 100;
-				// leftHandle.style.left = leftPercent + "%";
-        
-				// var rightPercent:Number = this.rightValue / (secondMax - secondMin) * 100;
-				// rightHandle.style.left = rightPercent + "%";
-      var startPercent:Number = parseFloat(leftHandle.style.left);
-      var endPercent:Number = parseFloat(rightHandle.style.left);
+      var startPercent:Number = getValuePercent(value, min, max);
+      var endPercent:Number = getValuePercent(secondValue, secondMin, secondMax);
+      leftHandle.style.left = startPercent + "%";
+      rightHandle.style.left = endPercent + "%";
       leftTrack.style.width = startPercent + '%';
       middleTrack.style.left = startPercent + '%';
       middleTrack.style.right = (100 - endPercent) + '%';
       rightTrack.style.width = (100 - endPercent) + '%';
+			if(valueNode){
+				valueNode.text = getValue();
+			}
 		}
 
-    COMPILE::JS
-    override protected function onMouseDown(e:MouseEvent):void{
-      super.onMouseDown(e);
-      handle = e.target as HTMLElement;
+    private function getValuePercent(currentValue:Number, rangeMin:Number, rangeMax:Number):Number{
+      if(rangeMax == rangeMin){
+        return 0;
+      }
+      return pinValue((currentValue - rangeMin) / (rangeMax - rangeMin) * 100, 0, 100);
     }
-    
-    override protected function onMouseUp():void{
-      super.onMouseUp();
+
+    COMPILE::JS
+    private function handlePointerStart(event:*):Boolean{
+      if(event.target === input || event.target === secondInput){
+        return false;
+      }
+      if(leftHandle.contains(event.target as Node)){
+        handle = leftHandle;
+      } else if(rightHandle.contains(event.target as Node)){
+        handle = rightHandle;
+      } else {
+        var bounds:ClientRect = element.getBoundingClientRect();
+        if(bounds.width == 0){
+          return false;
+        }
+        var percent:Number = (event.clientX - bounds.left) / bounds.width * 100;
+        handle = Math.abs(percent - parseFloat(leftHandle.style.left)) <= Math.abs(percent - parseFloat(rightHandle.style.left)) ? leftHandle : rightHandle;
+      }
+      handle.classList.add("is-dragged");
+      return true;
+    }
+
+    COMPILE::JS
+    private function handlePointerEnd(event:*, cancelled:Boolean):void{
+      if(handle){
+        handle.classList.remove("is-dragged");
+      }
       handle = null;
     }
 
     COMPILE::JS
-    override protected function onMouseMove(e:MouseEvent):void{
-      if(disabled){
-          return;
+    private function handlePointerMove(event:*):void{
+      if(disabled || !handle){
+        return;
       }
-      var sliderOffsetWidth:Number = element.offsetWidth;
-      
-      var localX:Number = PointUtils.globalToLocal(new Point(e.clientX,e.clientY),this).x;
-      var x:Number = pinValue(localX,0,sliderOffsetWidth);
-      var percent:Number = getPercent(x,sliderOffsetWidth);
-		  if (handle === leftHandle) {
-          if (percent < parseFloat(rightHandle.style.left) - 2) {
-            handle.style.left = percent + '%';
-            leftTrack.style.width = percent + '%';
-          }
-        }
-        else if (handle === rightHandle){
-          if (percent > parseFloat(leftHandle.style.left) + 2) {
-            handle.style.left = percent + '%';
-            rightTrack.style.width = (100 - percent) + '%';
-          }
-        }
-        middleTrack.style.left = leftHandle.style.left;
-        middleTrack.style.right = (100 - parseFloat(rightHandle.style.left)) + '%';
-        input.value = middleTrack.style.left;
-        secondInput.value = middleTrack.style.right;
-        if(parent){
-          positionElements();
-        }
-        if(valueNode){
-          valueNode.text = getValue();
-        }
+      var bounds:ClientRect = element.getBoundingClientRect();
+      if(bounds.width == 0){
+        return;
+      }
+      var x:Number = pinValue(event.clientX - bounds.left, 0, bounds.width);
+      var changed:Boolean;
+		  if(handle === leftHandle){
+        changed = setInputFromPosition(input, x / bounds.width, min, max, secondValue);
+      } else {
+        changed = setInputFromPosition(secondInput, x / bounds.width, secondMin, secondMax, value);
+      }
+      if(changed){
+        positionElements();
+        dispatchEvent(new Event("change"));
+      }
+    }
+
+    COMPILE::JS
+    private function setInputFromPosition(target:HTMLInputElement, ratio:Number, inputMin:Number, inputMax:Number, boundary:Number):Boolean{
+      var newValue:Number = inputMin + (inputMax - inputMin) * ratio;
+      var inputStep:Number = Number(target.step);
+      if(inputStep > 0){
+        newValue = inputMin + Math.round((newValue - inputMin) / inputStep) * inputStep;
+      }
+      newValue = target === input ? pinValue(newValue, inputMin, Math.min(inputMax, boundary)) : pinValue(newValue, Math.max(inputMin, boundary), inputMax);
+      if(Number(target.value) == newValue){
+        return false;
+      }
+      target.value = "" + newValue;
+      return true;
+    }
+
+    COMPILE::JS
+    private function handleNativeInput(event:*):void{
+      if(event.target === input && value > secondValue){
+        input.value = secondInput.value;
+      } else if(event.target === secondInput && secondValue < value){
+        secondInput.value = input.value;
+      }
+      positionElements();
+      dispatchEvent(new Event("change"));
     }
   }
 }

@@ -1,9 +1,9 @@
 package com.unhurdle.spectrum
 {
 	COMPILE::JS{
-		import com.unhurdle.spectrum.utils.PointerDrag;
 		import org.apache.royale.core.WrappedHTMLElement;
 	}
+	import com.unhurdle.spectrum.utils.PointerDrag;
 	import org.apache.royale.events.Event;
 	import org.apache.royale.utils.number.pinValue;
 
@@ -205,7 +205,6 @@ package com.unhurdle.spectrum
 		private var fillTrack:HTMLElement;
 		private var leftTrack:HTMLElement;
 		private var rightTrack:HTMLElement;
-		COMPILE::JS
 		private var pointerDrag:PointerDrag;
 			
 		COMPILE::JS

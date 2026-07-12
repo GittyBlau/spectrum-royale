@@ -239,15 +239,7 @@ import com.unhurdle.spectrum.data.BreadcrumbsItem;
     <comp:Variant header="Nested" notes="This variant still needs work">
       <sp:Breadcrumbs id="breadcrumbs3" itemClicked="new Toast((breadcrumbs3.selectedItem as BreadcrumbsItem).label,1000).show()">
         <sp:dataProvider>
-          <sp:BreadcrumbsItem text="Nav Root" isFolder="true"> <!-- icon -->
-            <sp:Breadcrumbs>
-              <sp:dataProvider>
-                <sp:BreadcrumbsItem text="Nav Root Nested"/>
-                <sp:BreadcrumbsItem text="Trend Nested"/>
-                <sp:BreadcrumbsItem text="January 2019 Assets Nested"/>
-              </sp:dataProvider>
-            </sp:Breadcrumbs>
-          </sp:BreadcrumbsItem>
+          <sp:BreadcrumbsItem text="Nav Root" isFolder="true"/>
           <sp:BreadcrumbsItem text="Trend"/>
           <sp:BreadcrumbsItem text="January 2019 Assets"/>
         </sp:dataProvider>
@@ -261,15 +253,7 @@ import com.unhurdle.spectrum.data.BreadcrumbsItem;
     <comp:Variant header="Nested (root visible)" notes="This variant still needs work">
       <sp:Breadcrumbs id="breadcrumbs4" itemClicked="new Toast((breadcrumbs4.selectedItem as BreadcrumbsItem).label,1000).show()">
         <sp:dataProvider>
-          <sp:BreadcrumbsItem text="Nav Root" isFolder="true">
-            <sp:Breadcrumbs>
-              <sp:dataProvider>
-                <sp:BreadcrumbsItem text="Nav Root Nested"/>
-                <sp:BreadcrumbsItem text="Trend Nested"/>
-                <sp:BreadcrumbsItem text="January 2019 Assets Nested"/>
-              </sp:dataProvider>
-            </sp:Breadcrumbs>
-          </sp:BreadcrumbsItem>
+          <sp:BreadcrumbsItem text="Nav Root" isFolder="true"/>
           <sp:BreadcrumbsItem text="Trend"/>
           <sp:BreadcrumbsItem text="January 2019 Assets"/>
         </sp:dataProvider>
@@ -311,15 +295,7 @@ import com.unhurdle.spectrum.data.BreadcrumbsItem;
     <comp:Variant header="Multiline Nested" notes="This variant still needs work">
       <sp:Breadcrumbs multiline="true" id="breadcrumbs7" itemClicked="new Toast((breadcrumbs7.selectedItem as BreadcrumbsItem).label,1000).show()">
         <sp:dataProvider>
-          <sp:BreadcrumbsItem text="Nav Root" isFolder="true">
-            <sp:Breadcrumbs>
-              <sp:dataProvider>
-                <sp:BreadcrumbsItem text="Nav Root Nested"/>
-                <sp:BreadcrumbsItem text="Trend Nested"/>
-                <sp:BreadcrumbsItem text="January 2019 Assets Nested"/>
-              </sp:dataProvider>
-            </sp:Breadcrumbs>
-          </sp:BreadcrumbsItem>
+          <sp:BreadcrumbsItem text="Nav Root" isFolder="true"/>
           <sp:BreadcrumbsItem text="Trend"/>
           <sp:BreadcrumbsItem text="January 2019 Assets"/>
         </sp:dataProvider>
@@ -333,15 +309,7 @@ import com.unhurdle.spectrum.data.BreadcrumbsItem;
     <comp:Variant header="Multiline Nested (root visible)" notes="This variant still needs work">
       <sp:Breadcrumbs multiline="true" id="breadcrumbs8" itemClicked="new Toast((breadcrumbs8.selectedItem as BreadcrumbsItem).label,1000).show()">
         <sp:dataProvider>
-          <sp:BreadcrumbsItem text="Nav Root" isFolder="true">
-            <sp:Breadcrumbs>
-              <sp:dataProvider>
-                <sp:BreadcrumbsItem text="Nav Root Nested"/>
-                <sp:BreadcrumbsItem text="Trend Nested"/>
-                <sp:BreadcrumbsItem text="January 2019 Assets Nested"/>
-              </sp:dataProvider>
-            </sp:Breadcrumbs>
-          </sp:BreadcrumbsItem>
+          <sp:BreadcrumbsItem text="Nav Root" isFolder="true"/>
           <sp:BreadcrumbsItem text="Trend"/>
           <sp:BreadcrumbsItem text="January 2019 Assets"/>
         </sp:dataProvider>
@@ -383,15 +351,7 @@ import com.unhurdle.spectrum.data.BreadcrumbsItem;
     <comp:Variant header="Compact Nested (root visible)" notes="This variant still needs work">
       <sp:Breadcrumbs compact="true" id="breadcrumbs11" itemClicked="new Toast((breadcrumbs11.selectedItem as BreadcrumbsItem).label,1000).show()">
         <sp:dataProvider>
-          <sp:BreadcrumbsItem text="Nav Root" isFolder="true">
-            <sp:Breadcrumbs>
-              <sp:dataProvider>
-                <sp:BreadcrumbsItem text="Nav Root Nested"/>
-                <sp:BreadcrumbsItem text="Trend Nested"/>
-                <sp:BreadcrumbsItem text="January 2019 Assets Nested"/>
-              </sp:dataProvider>
-            </sp:Breadcrumbs>
-          </sp:BreadcrumbsItem>
+          <sp:BreadcrumbsItem text="Nav Root" isFolder="true"/>
           <sp:BreadcrumbsItem text="Trend"/>
           <sp:BreadcrumbsItem text="January 2019 Assets"/>
         </sp:dataProvider>
@@ -405,15 +365,7 @@ import com.unhurdle.spectrum.data.BreadcrumbsItem;
     <comp:Variant header="Disabled">
       <sp:Breadcrumbs id="breadcrumbs12" itemClicked="new Toast((breadcrumbs12.selectedItem as BreadcrumbsItem).label,1000).show()">
         <sp:dataProvider>
-          <sp:BreadcrumbsItem text="Nav Root" isFolder="true" isDisabled="true">
-            <sp:Breadcrumbs>
-              <sp:dataProvider>
-                <sp:BreadcrumbsItem text="Nav Root Nested"/>
-                <sp:BreadcrumbsItem text="Trend Nested"/>
-                <sp:BreadcrumbsItem text="January 2019 Assets Nested"/>
-              </sp:dataProvider>
-            </sp:Breadcrumbs>
-          </sp:BreadcrumbsItem>
+          <sp:BreadcrumbsItem text="Nav Root" isFolder="true" isDisabled="true"/>
           <sp:BreadcrumbsItem text="Trend"/>
           <sp:BreadcrumbsItem text="January 2019 Assets"/>
         </sp:dataProvider>
@@ -421,15 +373,7 @@ import com.unhurdle.spectrum.data.BreadcrumbsItem;
       <Br/>
       <sp:Breadcrumbs id="breadcrumbs13" itemClicked="new Toast((breadcrumbs13.selectedItem as BreadcrumbsItem).label,1000).show()">
         <sp:dataProvider>
-          <sp:BreadcrumbsItem text="Nav Root" isFolder="true">
-            <sp:Breadcrumbs>
-              <sp:dataProvider>
-                <sp:BreadcrumbsItem text="Nav Root Nested"/>
-                <sp:BreadcrumbsItem text="Trend Nested"/>
-                <sp:BreadcrumbsItem text="January 2019 Assets Nested"/>
-              </sp:dataProvider>
-            </sp:Breadcrumbs>
-          </sp:BreadcrumbsItem>
+          <sp:BreadcrumbsItem text="Nav Root" isFolder="true"/>
           <sp:BreadcrumbsItem text="Trend" isDisabled="true"/>
           <sp:BreadcrumbsItem text="January 2019 Assets"/>
         </sp:dataProvider>

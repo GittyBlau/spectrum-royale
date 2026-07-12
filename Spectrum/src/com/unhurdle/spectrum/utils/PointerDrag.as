@@ -1,8 +1,13 @@
 package com.unhurdle.spectrum.utils
 {
-    COMPILE::JS
     public class PointerDrag
     {
+        COMPILE::SWF
+        public function PointerDrag(target:Object, startHandler:Function, moveHandler:Function, endHandler:Function, touchAction:String)
+        {
+        }
+
+        COMPILE::JS
         public function PointerDrag(target:HTMLElement, startHandler:Function, moveHandler:Function, endHandler:Function, touchAction:String)
         {
             _target = target;
@@ -13,10 +18,15 @@ package com.unhurdle.spectrum.utils
             _target.addEventListener("pointerdown", handlePointerDown);
         }
 
+        COMPILE::JS
         private var _target:HTMLElement;
+        COMPILE::JS
         private var _startHandler:Function;
+        COMPILE::JS
         private var _moveHandler:Function;
+        COMPILE::JS
         private var _endHandler:Function;
+        COMPILE::JS
         private var _pointerId:Number = -1;
         private var _enabled:Boolean = true;
 
@@ -27,6 +37,8 @@ package com.unhurdle.spectrum.utils
 
         public function set enabled(value:Boolean):void
         {
+            COMPILE::JS
+            {
             if (_enabled == value) {
                 return;
             }
@@ -34,14 +46,23 @@ package com.unhurdle.spectrum.utils
             if (!value) {
                 cancel();
             }
+            }
+            COMPILE::SWF
+            {
+                _enabled = value;
+            }
         }
 
         public function dispose():void
         {
+            COMPILE::JS
+            {
             cancel();
             _target.removeEventListener("pointerdown", handlePointerDown);
+            }
         }
 
+        COMPILE::JS
         private function handlePointerDown(event:*):void
         {
             if (!_enabled || _pointerId >= 0 || event.isPrimary === false || event.button != 0) {
@@ -59,6 +80,7 @@ package com.unhurdle.spectrum.utils
             _moveHandler(event);
         }
 
+        COMPILE::JS
         private function handlePointerMove(event:*):void
         {
             if (event.pointerId == _pointerId) {
@@ -66,6 +88,7 @@ package com.unhurdle.spectrum.utils
             }
         }
 
+        COMPILE::JS
         private function handlePointerUp(event:*):void
         {
             if (event.pointerId == _pointerId) {
@@ -73,6 +96,7 @@ package com.unhurdle.spectrum.utils
             }
         }
 
+        COMPILE::JS
         private function handlePointerCancel(event:*):void
         {
             if (event.pointerId == _pointerId) {
@@ -80,6 +104,7 @@ package com.unhurdle.spectrum.utils
             }
         }
 
+        COMPILE::JS
         private function handleLostPointerCapture(event:*):void
         {
             if (event.pointerId == _pointerId) {
@@ -87,6 +112,7 @@ package com.unhurdle.spectrum.utils
             }
         }
 
+        COMPILE::JS
         private function cancel():void
         {
             if (_pointerId >= 0) {
@@ -94,6 +120,7 @@ package com.unhurdle.spectrum.utils
             }
         }
 
+        COMPILE::JS
         private function finish(event:*, cancelled:Boolean):void
         {
             var pointerId:Number = _pointerId;
