@@ -1,5 +1,6 @@
 package com.unhurdle.spectrum
 {
+	import com.unhurdle.spectrum.utils.PointerDrag;
   import org.apache.royale.core.IChild;
   import org.apache.royale.utils.number.pinValue;
   import org.apache.royale.utils.number.getPercent;
@@ -28,12 +29,14 @@ package com.unhurdle.spectrum
         return "spectrum-SplitView";
     }
 		private var _splitter:Splitter;
+		private var pointerDrag:PointerDrag;
 		protected function get splitter():Splitter{
 			if(!_splitter){
 				_splitter = new Splitter();
-				_splitter.addEventListener("mousedown",onMouseDown);
 				COMPILE::JS{
 					splitter.cursor = direction == "horizontal" ? "col-resize" : "row-resize";
+					pointerDrag = new PointerDrag(_splitter.element, handlePointerStart, handlePointerMove, handlePointerEnd, direction == "horizontal" ? "pan-y" : "pan-x");
+					pointerDrag.enabled = isDraggable;
 				}
 			}
 			return _splitter;
@@ -55,6 +58,9 @@ package com.unhurdle.spectrum
 				// value? splitter.classList.add("is-draggable"): splitter.classList.remove("is-draggable");
 			_isDraggable = value;
 			splitter.draggable = value;
+			if(pointerDrag){
+				pointerDrag.enabled = value;
+			}
 		}
 		protected function positionElements(val:Number):void{
 			positionCollapsed = val;
@@ -140,41 +146,48 @@ package com.unhurdle.spectrum
 				
 				toggle(valueToSelector(value), true);
 				_direction = value;
-		}
-		private function onMouseDown(e: MouseEvent):void{
-			COMPILE::JS{
-				dispatchEvent(new Event("resizeStart"));
-				e.preventDefault();
-				e.stopImmediatePropagation();
-    		window.addEventListener('mouseup', onMouseUp);
-    		window.addEventListener('mousemove', onMouseMove);	
-			}
-		}
-		private function onMouseUp(e: MouseEvent):void{
-			COMPILE::JS{
-				dispatchEvent(new Event("resizeFinish"));
-				window.removeEventListener('mouseup', onMouseUp);
-				window.removeEventListener('mousemove', onMouseMove);		
-			}
-		}
-		private function onMouseMove(e: MouseEvent):void{
-			COMPILE::JS{
-				var percent:Number;
-				var clientRect:ClientRect = element.getBoundingClientRect();
-				if(direction == "horizontal"){
-					var sliderLeft:Number = clientRect.left;
-					var sliderWidth:Number = clientRect.width;
-					var x:Number = pinValue(e.clientX - sliderLeft,0,sliderWidth);
-					percent = getPercent(x,sliderWidth);
-				} else{
-					var sliderTop:Number = clientRect.top;
-					var sliderHeight:Number = clientRect.height;
-					var y:Number = pinValue(e.clientY - sliderTop,0,sliderHeight);
-					percent = getPercent(y,sliderHeight);
+				COMPILE::JS{
+					if(_splitter){
+						_splitter.cursor = value == "horizontal" ? "col-resize" : "row-resize";
+					}
+					if(pointerDrag){
+						pointerDrag.setTouchAction(value == "horizontal" ? "pan-y" : "pan-x");
+					}
 				}
-				_position = percent;
-				positionElements(percent);
+		}
+		COMPILE::JS
+		private function handlePointerStart(event:PointerEvent):Boolean{
+			if(!isDraggable){
+				return false;
 			}
+			dispatchEvent(new Event(RESIZE_START));
+			splitter.toggle("is-dragged",true);
+			return true;
+		}
+		COMPILE::JS
+		private function handlePointerEnd():void{
+			splitter.toggle("is-dragged",false);
+			dispatchEvent(new Event(RESIZE_FINISH));
+		}
+		COMPILE::JS
+		private function handlePointerMove(event:PointerEvent):void{
+			var percent:Number;
+			var clientRect:ClientRect = element.getBoundingClientRect();
+			if(direction == "horizontal"){
+				if(clientRect.width == 0){
+					return;
+				}
+				var x:Number = pinValue(event.clientX - clientRect.left,0,clientRect.width);
+				percent = getPercent(x,clientRect.width);
+			} else{
+				if(clientRect.height == 0){
+					return;
+				}
+				var y:Number = pinValue(event.clientY - clientRect.top,0,clientRect.height);
+				percent = getPercent(y,clientRect.height);
+			}
+			_position = percent;
+			positionElements(percent);
 		}
 		
 		COMPILE::JS
