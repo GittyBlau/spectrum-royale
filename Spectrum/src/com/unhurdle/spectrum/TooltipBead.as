@@ -23,7 +23,6 @@ package com.unhurdle.spectrum
 		 * start/end
 		 * delay
 		 * offset
-		 * touch and hold on mobile
 		 * (shouldflip is handled in AdaptiveTooltipBead)
 		 * prevent multiple tooltips being shown (keep static reference to active tooltip)
 		 * References:
@@ -182,6 +181,61 @@ package com.unhurdle.spectrum
 			_strand = value;
 
 			(_strand as IEventDispatcher).addEventListener("mouseenter", rollOverHandler, false);
+			COMPILE::JS
+			{
+				(_strand as ISpectrumElement).element.addEventListener("pointerdown", handlePointerDown);
+			}
+		}
+
+		COMPILE::JS
+		private static const TOUCH_HOLD_DELAY:Number = 500;
+
+		COMPILE::JS
+		private var touchPointerId:Number = -1;
+
+		COMPILE::JS
+		private var touchHoldTimeoutId:Number = 0;
+
+		COMPILE::JS
+		private function handlePointerDown(event:PointerEvent):void
+		{
+			if(event.pointerType != "touch" || event.isPrimary === false || !toolTip || touchPointerId >= 0){
+				return;
+			}
+			touchPointerId = event.pointerId;
+			var element:HTMLElement = (_strand as ISpectrumElement).element;
+			element.addEventListener("pointerup", handlePointerEnd);
+			element.addEventListener("pointercancel", handlePointerEnd);
+			element.addEventListener("lostpointercapture", handlePointerEnd);
+			element["setPointerCapture"](touchPointerId);
+			touchHoldTimeoutId = setTimeout(showTouchTooltip, TOUCH_HOLD_DELAY);
+		}
+
+		COMPILE::JS
+		private function showTouchTooltip():void
+		{
+			touchHoldTimeoutId = 0;
+		showTooltip();
+		}
+
+		COMPILE::JS
+		private function handlePointerEnd(event:PointerEvent):void
+		{
+			if(event.pointerId != touchPointerId){
+				return;
+			}
+			var element:HTMLElement = (_strand as ISpectrumElement).element;
+			element.removeEventListener("pointerup", handlePointerEnd);
+			element.removeEventListener("pointercancel", handlePointerEnd);
+			element.removeEventListener("lostpointercapture", handlePointerEnd);
+			touchPointerId = -1;
+			if(touchHoldTimeoutId > 0){
+				clearTimeout(touchHoldTimeoutId);
+				touchHoldTimeoutId = 0;
+			}
+			if(tt){
+				closeTooltip();
+			}
 		}
 
 		protected function rollOverHandler(event:MouseEvent):void

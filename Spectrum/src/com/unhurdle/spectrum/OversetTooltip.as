@@ -6,7 +6,6 @@ package com.unhurdle.spectrum {
 
 	import org.apache.royale.core.Bead;
 	import org.apache.royale.core.IStrand;
-	import org.apache.royale.events.MouseEvent;
 
 	public class OversetTooltip extends Bead {
 		public function OversetTooltip() {
@@ -36,7 +35,7 @@ package com.unhurdle.spectrum {
 					element = (value as ISpectrumElement).element;
 				}
 			}
-			element.addEventListener(MouseEvent.MOUSE_OVER, titleHover);
+			element.addEventListener("pointerover", titleHover);
 		}
 
 		private function titleHover():void {
