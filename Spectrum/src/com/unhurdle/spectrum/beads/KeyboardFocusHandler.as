@@ -19,29 +19,75 @@ package com.unhurdle.spectrum.beads
       super.strand = value;
       host.focusElement.addEventListener("focus",handleFocus);
       host.focusElement.addEventListener("blur",handleBlur);
-      host.focusElement.addEventListener("mousedown",handleMousedown);
+      COMPILE::JS
+      {
+        initializeModalityTracking();
+      }
+      COMPILE::SWF
+      {
+        host.focusElement.addEventListener("mousedown",handleMousedown);
+      }
     }
 
     private function handleFocus(ev:Event):void{
-      // trace("focus");
-      if(duringClick){
-        host.focused = true;
-      } else {
-        host.keyboardFocused = true;
+      COMPILE::JS
+      {
+        if(keyboardModality){
+          host.keyboardFocused = true;
+        } else {
+          host.focused = true;
+        }
+      }
+      COMPILE::SWF
+      {
+        if(duringClick){
+          host.focused = true;
+        } else {
+          host.keyboardFocused = true;
+        }
       }
     }
     private function handleBlur(ev:Event):void{
-      // trace("blur");
       host.focused = host.keyboardFocused = false;
     }
+
+    COMPILE::JS
+    private static var modalityTrackingInitialized:Boolean;
+
+    COMPILE::JS
+    private static var keyboardModality:Boolean = true;
+
+    COMPILE::JS
+    private static function initializeModalityTracking():void{
+      if(modalityTrackingInitialized){
+        return;
+      }
+      modalityTrackingInitialized = true;
+      document.addEventListener("pointerdown",handlePointerDown,true);
+      document.addEventListener("keydown",handleKeyDown,true);
+    }
+
+    COMPILE::JS
+    private static function handlePointerDown(event:PointerEvent):void{
+      keyboardModality = false;
+    }
+
+    COMPILE::JS
+    private static function handleKeyDown(event:KeyboardEvent):void{
+      if(!event.altKey && !event.ctrlKey && !event.metaKey){
+        keyboardModality = true;
+      }
+    }
+
+    COMPILE::SWF
     private var duringClick:Boolean;
-    private function handleMousedown(ev:Event):void{
-      // trace("mousedown");
+
+    COMPILE::SWF
+    private function handleMousedown(event:Event):void{
       duringClick = true;
       setTimeout(function():void{
         duringClick = false;
       },100);
-      // focused = keyboardFocused = false;
     }
 
   }
