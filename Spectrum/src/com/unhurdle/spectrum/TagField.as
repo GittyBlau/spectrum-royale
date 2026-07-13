@@ -12,6 +12,7 @@ package com.unhurdle.spectrum
 	import org.apache.royale.geom.Rectangle;
 	import org.apache.royale.html.util.getLabelFromData;
 	import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
+	import com.unhurdle.spectrum.utils.OutsidePointerTracker;
 	[Event(name="inputChanged", type="org.apache.royale.events.Event")]
 	[Event(name="change", type="org.apache.royale.events.Event")]
 	[Event(name="tagAdded", type="org.apache.royale.events.ValueEvent")]
@@ -62,6 +63,7 @@ package com.unhurdle.spectrum
 		}
 
 		private var comboBoxList:ComboBoxList;
+		private var outsidePointerTracker:OutsidePointerTracker;
 		private var valuesArr:Array = [];
 		private var ind:Number = 0;
 		private function selectValue(ev:ValueEvent):void
@@ -139,19 +141,31 @@ package com.unhurdle.spectrum
 				if (valuesArr.length)
 				{
 					positionPopup(); // need to position before opening because adding it to the dom changes the position
-					comboBoxList.open = true;
+					setComboBoxListOpen(true);
 				}
 				else
 				{
-					comboBoxList.open = false;
+					setComboBoxListOpen(false);
 				}
 			}
 			calculatePosition();
 			updating = false;
 		}
-		protected function handleControlMouseDown(event:MouseEvent):void
+		private function setComboBoxListOpen(value:Boolean):void
 		{
-			event.stopImmediatePropagation();
+			comboBoxList.open = value;
+			if(value){
+				if(!outsidePointerTracker){
+					outsidePointerTracker = new OutsidePointerTracker([element, comboBoxList.element], closeComboBoxList);
+				}
+				outsidePointerTracker.start();
+			} else if(outsidePointerTracker){
+				outsidePointerTracker.stop();
+			}
+		}
+		private function closeComboBoxList():void
+		{
+			setComboBoxListOpen(false);
 		}
 		public function get minMenuHeight():Number
 		{
@@ -218,7 +232,7 @@ package com.unhurdle.spectrum
 				}
 				if (comboBoxList)
 				{
-					comboBoxList.open = false;
+					setComboBoxListOpen(false);
 				}
 				var tags:Array = tagGroup.tags;
 				var len:int = tags.length;
@@ -310,7 +324,6 @@ package com.unhurdle.spectrum
 						input.addEventListener("onArrowDown", selectValue);
 						input.addEventListener("onArrowUp", selectValue);
 						input.element.addEventListener("focus", updateValue, true);
-						input.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 					}
 				}
 				else if (comboBoxList.open)
@@ -330,7 +343,9 @@ package com.unhurdle.spectrum
 					input.removeEventListener("onArrowDown", selectValue);
 					input.removeEventListener("onArrowUp", selectValue);
 					input.element.removeEventListener("focus", updateValue, true);
-					input.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
+					if(outsidePointerTracker){
+						outsidePointerTracker.stop();
+					}
 				}
 			}
 		}

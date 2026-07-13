@@ -18,6 +18,7 @@ package com.unhurdle.spectrum
 	import com.unhurdle.spectrum.utils.getExplicitZIndex;
   import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
   import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
+  import com.unhurdle.spectrum.utils.OutsidePointerTracker;
   /**
    * TODO maybe add flexible with styling of min-width: 0;width:auto;
    */
@@ -66,6 +67,7 @@ package com.unhurdle.spectrum
     }
     public var popover:ComboBoxList;
     private var anchorTracker:AnchoredOverlayTracker;
+    private var outsidePointerTracker:OutsidePointerTracker;
     private function get menu():Menu{
       return popover.list;
     }
@@ -95,20 +97,31 @@ package com.unhurdle.spectrum
           anchorTracker = new AnchoredOverlayTracker(element, positionPopup);
         }
         anchorTracker.start();
+        if(!outsidePointerTracker){
+          outsidePointerTracker = new OutsidePointerTracker([button.element, popover.element], closePopup);
+        }
+        outsidePointerTracker.start();
       }
+			COMPILE::SWF
+			{
 			button.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
       popover.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 			topMostEventDispatcher.addEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
+      }
     }
     private function closePopup():void{
       if(popover && popover.open){
       COMPILE::JS
       {
         anchorTracker.stop();
+        outsidePointerTracker.stop();
       }
+			COMPILE::SWF
+			{
   			popover.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 	  		button.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 		  	topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
+      }
         popover.open = false;
       }
 
@@ -173,11 +186,13 @@ package com.unhurdle.spectrum
         popover.position = "top";
       }
     }
-		protected function handleControlMouseDown(event:MouseEvent):void
+    COMPILE::SWF
+    protected function handleControlMouseDown(event:MouseEvent):void
 		{			
 			event.stopImmediatePropagation();
 		}
-		protected function handleTopMostEventDispatcherMouseDown(event:MouseEvent):void
+    COMPILE::SWF
+    protected function handleTopMostEventDispatcherMouseDown(event:MouseEvent):void
 		{
       closePopup();
 		}

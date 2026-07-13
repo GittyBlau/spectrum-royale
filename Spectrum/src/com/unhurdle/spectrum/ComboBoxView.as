@@ -5,6 +5,7 @@ package com.unhurdle.spectrum{
 	import com.unhurdle.spectrum.utils.getExplicitZIndex;
 	import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
 	import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
+	import com.unhurdle.spectrum.utils.OutsidePointerTracker;
 
 	import org.apache.royale.collections.ICollectionView;
 	import org.apache.royale.core.BeadViewBase;
@@ -95,6 +96,7 @@ package com.unhurdle.spectrum{
 		
 		private var comboHost:ComboBox;
 		private var anchorTracker:AnchoredOverlayTracker;
+		private var outsidePointerTracker:OutsidePointerTracker;
     private var model:IComboBoxModel;
 		private var _currentText:String;
 		/**
@@ -346,9 +348,12 @@ package com.unhurdle.spectrum{
 					}
 					indexSet = true;
 				}
-				_popup.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
-				comboHost.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
-				comboHost.topMostEventDispatcher.addEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
+				COMPILE::SWF
+				{
+					_popup.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
+					comboHost.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
+					comboHost.topMostEventDispatcher.addEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
+				}
 				_popup.open = true;
 				positionPopup();
 				COMPILE::JS
@@ -357,6 +362,10 @@ package com.unhurdle.spectrum{
 						anchorTracker = new AnchoredOverlayTracker(comboHost.element, positionPopup, _popup.element);
 					}
 					anchorTracker.start();
+					if(!outsidePointerTracker){
+						outsidePointerTracker = new OutsidePointerTracker([comboHost.element, _popup.element], closePopup);
+					}
+					outsidePointerTracker.start();
 				}
 				if (_filterPending)
 				{
@@ -372,11 +381,13 @@ package com.unhurdle.spectrum{
 			var componentBounds:Rectangle = getPopUpHostLocalBounds(comboHost);
 			_popup.positionPopup(componentBounds,comboHost.width);
 		}
+		COMPILE::SWF
 		protected function handleControlMouseDown(event:MouseEvent):void
 		{			
 			event.stopImmediatePropagation();
 		}
 		
+		COMPILE::SWF
 		protected function handleTopMostEventDispatcherMouseDown(event:MouseEvent):void
 		{
 			closePopup();
@@ -389,10 +400,16 @@ package com.unhurdle.spectrum{
 					if(anchorTracker){
 						anchorTracker.stop();
 					}
+					if(outsidePointerTracker){
+						outsidePointerTracker.stop();
+					}
 				}
-				_popup.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
-				comboHost.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
-				comboHost.topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
+				COMPILE::SWF
+				{
+					_popup.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
+					comboHost.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
+					comboHost.topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
+				}
 			_popup.open = false;
 			}
 			textfield.focus();

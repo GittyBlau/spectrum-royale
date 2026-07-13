@@ -13,6 +13,7 @@ package com.unhurdle.spectrum
   import org.apache.royale.events.MouseEvent;
   import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
   import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
+  import com.unhurdle.spectrum.utils.OutsidePointerTracker;
 
   public class DatePicker extends SpectrumBase
   {
@@ -37,6 +38,7 @@ package com.unhurdle.spectrum
     private var button:FieldButton;
     private var datePicker:HTMLInputElement;
     private var anchorTracker:AnchoredOverlayTracker;
+    private var outsidePointerTracker:OutsidePointerTracker;
     
     public var dateFormat:String = "mm/dd/yyyy";
     
@@ -85,10 +87,12 @@ package com.unhurdle.spectrum
 
       return element;
     }
+    COMPILE::SWF
     protected function handleControlMouseDown(event:MouseEvent):void
 		{			
 			event.stopImmediatePropagation();
 		}
+    COMPILE::SWF
     private function handleTopMostEventDispatcherMouseDown():void
     {
       closePopover();
@@ -162,9 +166,12 @@ package com.unhurdle.spectrum
     }
     private function openPopover():void
     {
-      button.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
-      popover.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
-      topMostEventDispatcher.addEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
+      COMPILE::SWF
+      {
+        button.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
+        popover.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
+        topMostEventDispatcher.addEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
+      }
       popover.open = true;
       button.selected = true;
       COMPILE::JS
@@ -173,6 +180,10 @@ package com.unhurdle.spectrum
           anchorTracker = new AnchoredOverlayTracker(element, positionPopup);
         }
         anchorTracker.start();
+        if(!outsidePointerTracker){
+          outsidePointerTracker = new OutsidePointerTracker([element, popover.element], closePopover);
+        }
+        outsidePointerTracker.start();
       }
       positionPopup();
       calendar.startDate = startDate;
@@ -190,10 +201,14 @@ package com.unhurdle.spectrum
       COMPILE::JS
       {
         anchorTracker.stop();
+        outsidePointerTracker.stop();
       }
-      button.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
-      popover.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
-      topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
+      COMPILE::SWF
+      {
+        button.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
+        popover.removeEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
+        topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, handleTopMostEventDispatcherMouseDown);
+      }
       popover.open = false;
       button.selected = false;
     }

@@ -23,6 +23,7 @@ package com.unhurdle.spectrum
 	import com.unhurdle.spectrum.utils.cloneNativeKeyboardEvent;
 	import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
 	import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
+	import com.unhurdle.spectrum.utils.OutsidePointerTracker;
 	import org.apache.royale.events.utils.UIKeys;
 	import org.apache.royale.core.IItemRendererOwnerView;
 	/**
@@ -62,7 +63,6 @@ package com.unhurdle.spectrum
 			_button.iconType = type;
 			_button.iconClass = appendSelector("-icon");
 			_button.addEventListener(KeyboardEvent.KEY_DOWN, handleKeyDown);
-			_button.addEventListener(MouseEvent.MOUSE_DOWN, handleControlMouseDown);
 			// _button.textNode.element.style.maxWidth = '85%';
 			addElement(_button);
 			popover = new ComboBoxList();
@@ -79,6 +79,7 @@ package com.unhurdle.spectrum
 		}
 		public var popover:ComboBoxList;
 		private var anchorTracker:AnchoredOverlayTracker;
+		private var outsidePointerTracker:OutsidePointerTracker;
 		public function get menu():Menu{
 			return popover.list;
 		}
@@ -121,6 +122,10 @@ package com.unhurdle.spectrum
 					anchorTracker = new AnchoredOverlayTracker(element, positionPopup);
 				}
 				anchorTracker.start();
+				if(!outsidePointerTracker){
+					outsidePointerTracker = new OutsidePointerTracker([element, popover.element], closePopup);
+				}
+				outsidePointerTracker.start();
 			}
 			popover.filterFunction = filterFunction;
 			if(searchable){
@@ -138,16 +143,12 @@ package com.unhurdle.spectrum
 				COMPILE::JS
 				{
 					anchorTracker.stop();
+					outsidePointerTracker.stop();
 				}
 				popover.open = false;
 			}
 		}
 		
-		protected function handleControlMouseDown(event:MouseEvent):void
-		{	
-			if(popover.open)
-				event.stopImmediatePropagation();
-		}
 		public function get dataProvider():Object{
 			return menu.dataProvider;
 		}
