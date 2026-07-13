@@ -14,7 +14,6 @@ package com.unhurdle.spectrum
 		public function Slider()
 		{
 			super();
-			usesPointerDrag = true;
 		}
 		override protected function getSelector():String{
 			return "spectrum-Slider";

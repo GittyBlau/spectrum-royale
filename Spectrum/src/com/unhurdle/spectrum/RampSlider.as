@@ -11,11 +11,9 @@ package com.unhurdle.spectrum
     public function RampSlider()
     {
       super();
-      usesPointerDrag = true;
       typeNames = getSelector() + " " + valueToSelector("ramp");
     }
 
-    private var handle:HTMLElement;
     private var pointerDrag:PointerDrag;
     
     COMPILE::JS

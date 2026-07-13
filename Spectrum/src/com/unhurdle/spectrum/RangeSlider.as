@@ -11,7 +11,6 @@ package com.unhurdle.spectrum
     public function RangeSlider()
     {
       super();
-      usesPointerDrag = true;
       typeNames = getSelector() + " "+ valueToSelector("range");
     }
     override protected function getSelector():String{

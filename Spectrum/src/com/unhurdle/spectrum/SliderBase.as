@@ -1,8 +1,6 @@
 package com.unhurdle.spectrum
 {
-	COMPILE::JS{}
 	import com.unhurdle.spectrum.includes.SliderInclude;
-	import org.apache.royale.events.MouseEvent;
 	
 	[Event(name="change", type="org.apache.royale.events.Event")]
 
@@ -33,7 +31,6 @@ package com.unhurdle.spectrum
 		protected var valueNode:TextNode;
 
 		private var _disabled:Boolean;
-		protected var usesPointerDrag:Boolean;
 
 		public function get disabled():Boolean
 		{
@@ -45,16 +42,6 @@ package com.unhurdle.spectrum
 			if(value != !!_disabled){
 				toggle("is-disabled",value);
 				enableDisableInput(value);
-				COMPILE::JS
-				{
-					if(!usesPointerDrag){
-						if(value){
-							element.removeEventListener('mousedown', onMouseDown);
-						} else {
-							element.addEventListener('mousedown', onMouseDown);
-						}
-					}
-				}
 			}
 			_disabled = value;
 		}
@@ -150,36 +137,6 @@ package com.unhurdle.spectrum
 		protected function getValue():String{
 			// override in subclass
 			return "";
-		}		
-
-		COMPILE::SWF
-		protected function onMouseDown():void {}
-
-		// Element interaction
-		COMPILE::JS
-		protected function onMouseDown(e:MouseEvent):void {
-			if(handle){
-				handle.classList.add("is-dragged");
-			}
-			onMouseMove(e);
-			window.addEventListener('mouseup', onMouseUp);
-			window.addEventListener('mousemove', onMouseMove);
-		}
-		COMPILE::SWF
-		protected function onMouseUp():void {}
-
-		COMPILE::JS
-		protected function onMouseUp():void {
-			if(handle){
-				handle.classList.remove("is-dragged");
-			}
-			window.removeEventListener('mouseup', onMouseUp);
-			window.removeEventListener('mousemove', onMouseMove);
-		}
-
-		protected function onMouseMove(e:MouseEvent):void {
-			// override in sub-class
-
 		}
 
 	}
