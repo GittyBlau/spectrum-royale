@@ -90,7 +90,7 @@ package com.unhurdle.spectrum.utils
 
 		private function scheduleUpdate():void
 		{
-			if (_animationFrameId == 0)
+			if (_active && _animationFrameId == 0)
 			{
 				_animationFrameId = requestAnimationFrame(update);
 			}
