@@ -9,9 +9,9 @@ package com.unhurdle.spectrum
 	import org.apache.royale.functional.decorator.debounceLong;
 	import org.apache.royale.geom.Rectangle;
 	import org.apache.royale.html.beads.DataContainerView;
-	import org.apache.royale.utils.DisplayUtils;
 	import org.apache.royale.core.IItemRenderer;
 	import org.apache.royale.core.IUIBase;
+	import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
 
 	[Event(name="change", type="org.apache.royale.events.Event")]
 	public class ComboBoxList extends Popover implements IPopUp, IBead
@@ -154,7 +154,7 @@ package com.unhurdle.spectrum
 		public function positionPopup(componentBounds:Rectangle,preferredWidth:Number = NaN):void{
 			var minHeight:Number = _minMenuHeight + 6;
 			// Figure out direction and max size
-			var appBounds:Rectangle = DisplayUtils.getScreenBoundingRect(Application.current.initialView);
+			var appBounds:Rectangle = getPopUpHostLocalBounds(Application.current.initialView);
 			var spaceToBottom:Number = appBounds.bottom - componentBounds.bottom;
 			var spaceToTop:Number = componentBounds.top - appBounds.top;
 			var spaceOnBottom:Boolean = spaceToBottom >= spaceToTop;

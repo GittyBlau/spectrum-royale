@@ -11,13 +11,13 @@ package com.unhurdle.spectrum
   import org.apache.royale.events.MouseEvent;
   import org.apache.royale.events.Event;
   import org.apache.royale.geom.Rectangle;
-  import org.apache.royale.utils.DisplayUtils;
   import org.apache.royale.utils.callLater;
 	// import com.unhurdle.spectrum.data.IMenuItem;
 	import com.unhurdle.spectrum.const.IconPrefix;
 	import com.unhurdle.spectrum.data.IMenuItem;
 	import com.unhurdle.spectrum.utils.getExplicitZIndex;
   import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
+  import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
   /**
    * TODO maybe add flexible with styling of min-width: 0;width:auto;
    */
@@ -115,8 +115,8 @@ package com.unhurdle.spectrum
     }
     private function positionPopup():void{
       var minHeight:Number = _minMenuHeight + 6;
-      var appBounds:Rectangle = DisplayUtils.getScreenBoundingRect(Application.current.initialView);
-      var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(this);
+      var appBounds:Rectangle = getPopUpHostLocalBounds(Application.current.initialView);
+      var componentBounds:Rectangle = getPopUpHostLocalBounds(this);
       var spaceToBottom:Number = appBounds.bottom - componentBounds.bottom;
       var spaceToTop:Number = componentBounds.top - appBounds.top;
       var spaceOnBottom:Boolean = spaceToBottom >= spaceToTop;

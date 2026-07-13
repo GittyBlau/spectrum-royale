@@ -3,10 +3,11 @@ package com.unhurdle.spectrum
 	import org.apache.royale.core.IPopUp;
 	import org.apache.royale.events.Event;
 	import org.apache.royale.core.IPopUpHostParent;
+	import org.apache.royale.core.IUIBase;
 	import org.apache.royale.geom.Rectangle;
-	import org.apache.royale.utils.DisplayUtils;
 	import org.apache.royale.geom.Point;
 	import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
+	import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
 
 	[Event(name="openChanged", type="org.apache.royale.events.Event")]
 
@@ -91,7 +92,7 @@ package com.unhurdle.spectrum
 
 		private function updateAnchor():void{
 			if(_anchorTarget){
-				anchor = DisplayUtils.getScreenBoundingRect(_anchorTarget);
+				anchor = getPopUpHostLocalBounds(_anchorTarget as IUIBase);
 			}
 		}
 
@@ -222,8 +223,8 @@ package com.unhurdle.spectrum
 			if(!dialog){
 				return;
 			}
-			var appBounds:Rectangle = DisplayUtils.getScreenBoundingRect(Application.current.initialView);
-			var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(this);
+			var appBounds:Rectangle = getPopUpHostLocalBounds(Application.current.initialView);
+			var componentBounds:Rectangle = getPopUpHostLocalBounds(this);
 			// if there's no anchor, position the dialog centered on the screen.
 			if(!anchor){
 				x = (appBounds.width - componentBounds.width) / 2;

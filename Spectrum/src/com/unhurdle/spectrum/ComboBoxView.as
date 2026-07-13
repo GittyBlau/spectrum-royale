@@ -4,6 +4,7 @@ package com.unhurdle.spectrum{
 	import com.unhurdle.spectrum.includes.InputGroupInclude;
 	import com.unhurdle.spectrum.utils.getExplicitZIndex;
 	import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
+	import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
 
 	import org.apache.royale.collections.ICollectionView;
 	import org.apache.royale.core.BeadViewBase;
@@ -21,8 +22,6 @@ package com.unhurdle.spectrum{
 	import org.apache.royale.geom.Rectangle;
 	import org.apache.royale.html.beads.IComboBoxView;
 	import org.apache.royale.html.util.getLabelFromData;
-	import org.apache.royale.utils.DisplayUtils;
-	import org.apache.royale.utils.PointUtils;
 	import org.apache.royale.utils.UIUtils;
 	import org.apache.royale.utils.callLater;
 	import org.apache.royale.utils.loadBeadFromValuesManager;
@@ -323,10 +322,6 @@ package com.unhurdle.spectrum{
 		public function set popUpVisible(value:Boolean):void
 		{
 			if(value){
-				var origin:Point = new Point(0, comboHost.height - 6);
-				var relocated:Point = PointUtils.localToGlobal(origin,comboHost);
-				_popup.x = relocated.x
-				_popup.y = relocated.y;
 				_popup.width = comboHost.popupWidth > 0 ? comboHost.popupWidth : comboHost.width;
 				list.selectedIndex = -1;
 
@@ -374,7 +369,7 @@ package com.unhurdle.spectrum{
 			textfield.focus();
 		}
 		private function positionPopup():void{
-			var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(comboHost);
+			var componentBounds:Rectangle = getPopUpHostLocalBounds(comboHost);
 			_popup.positionPopup(componentBounds,comboHost.width);
 		}
 		protected function handleControlMouseDown(event:MouseEvent):void

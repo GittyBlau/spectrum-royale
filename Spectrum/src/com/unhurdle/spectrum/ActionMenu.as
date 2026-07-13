@@ -16,7 +16,7 @@ package com.unhurdle.spectrum
 	import org.apache.royale.events.MouseEvent;
 	import org.apache.royale.geom.Point;
 	import org.apache.royale.html.util.getLabelFromData;
-	import org.apache.royale.utils.PointUtils;
+	import com.unhurdle.spectrum.utils.localToPopUpHost;
 	import org.apache.royale.utils.UIUtils;
 	import org.apache.royale.utils.callLater;
 
@@ -106,11 +106,8 @@ package com.unhurdle.spectrum
 				popover.setStyle("pointer-events","");
 				var popoverWidth:Number = popover.width + 1;//added +1 cuz the browser was rounding it down
 				var popupHost:IPopUpHost = UIUtils.findPopUpHost(this);
-				var offset:Point = PointUtils.localToViewport(new Point(),popupHost);
 				var origin:Point = new Point(0, height - 6);
-				var relocated:Point = PointUtils.localToViewport(origin,this);
-				relocated.x -= offset.x;
-				relocated.y -= offset.y;
+				var relocated:Point = localToPopUpHost(origin,this);
 				popover.y = determinePosition(relocated.y);
 				popover.x = relocated.x;
 				if(_alignTofit){

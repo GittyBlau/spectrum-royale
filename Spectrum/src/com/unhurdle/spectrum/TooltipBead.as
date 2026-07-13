@@ -8,10 +8,10 @@ package com.unhurdle.spectrum
 	import org.apache.royale.events.IEventDispatcher;
 	import org.apache.royale.events.MouseEvent;
 	import org.apache.royale.geom.Point;
-	import org.apache.royale.utils.PointUtils;
 	import org.apache.royale.utils.UIUtils;
 	import com.unhurdle.spectrum.Tooltip;
 	import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
+	import com.unhurdle.spectrum.utils.localToPopUpHost;
 	
 	public class TooltipBead implements IBead
 	{
@@ -352,7 +352,7 @@ package com.unhurdle.spectrum
 				pt.y = comp.height;
 			}
 
-			pt = PointUtils.localToGlobal(pt, comp);
+			pt = localToPopUpHost(pt, comp);
 			return pt;
 		}
 

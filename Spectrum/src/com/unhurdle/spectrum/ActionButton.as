@@ -8,7 +8,6 @@ package com.unhurdle.spectrum
   import org.apache.royale.utils.UIUtils;
   import org.apache.royale.core.IPopUpHost;
   import org.apache.royale.geom.Point;
-  import org.apache.royale.utils.PointUtils;
   import org.apache.royale.events.Event;
   import org.apache.royale.utils.callLater;
   import com.unhurdle.spectrum.const.IconType;
@@ -16,6 +15,7 @@ package com.unhurdle.spectrum
   import com.unhurdle.spectrum.interfaces.IKeyboardNavigateable;
   import com.unhurdle.spectrum.utils.getExplicitZIndex;
   import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
+  import com.unhurdle.spectrum.utils.localToPopUpHost;
 
 	[Event(name="change", type="org.apache.royale.events.Event")]
 	[Event(name="selectionChanged", type="org.apache.royale.events.Event")]
@@ -281,7 +281,7 @@ package com.unhurdle.spectrum
     protected function positionPopup():void{
       popover.setStyle("pointer-events","");
       var origin:Point = new Point(width, height);
-      var relocated:Point = PointUtils.localToGlobal(origin,this);
+      var relocated:Point = localToPopUpHost(origin,this);
       popover.x = relocated.x
       popover.y = relocated.y;
 

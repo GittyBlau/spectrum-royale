@@ -9,10 +9,10 @@ package com.unhurdle.spectrum
   import org.apache.royale.svg.elements.Path;
   import com.unhurdle.spectrum.includes.InputGroupInclude;
   import org.apache.royale.geom.Rectangle;
-  import org.apache.royale.utils.DisplayUtils;
   import org.apache.royale.html.elements.Div;
   import org.apache.royale.events.MouseEvent;
   import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
+  import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
 
   public class DatePicker extends SpectrumBase
   {
@@ -181,7 +181,7 @@ package com.unhurdle.spectrum
     }
     private function positionPopup():void
     {
-      var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(this);
+      var componentBounds:Rectangle = getPopUpHostLocalBounds(this);
       popover.y = componentBounds.bottom;
       popover.x = componentBounds.left;
     }

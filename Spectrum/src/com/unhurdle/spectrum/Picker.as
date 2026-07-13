@@ -12,7 +12,6 @@ package com.unhurdle.spectrum
 	import org.apache.royale.events.MouseEvent;
 	import org.apache.royale.events.Event;
 	import org.apache.royale.geom.Rectangle;
-	import org.apache.royale.utils.DisplayUtils;
 	import org.apache.royale.utils.callLater;
 	// import com.unhurdle.spectrum.data.IMenuItem;
 	import com.unhurdle.spectrum.const.IconPrefix;
@@ -23,6 +22,7 @@ package com.unhurdle.spectrum
 	import org.apache.royale.events.utils.NavigationKeys;
 	import com.unhurdle.spectrum.utils.cloneNativeKeyboardEvent;
 	import com.unhurdle.spectrum.utils.AnchoredOverlayTracker;
+	import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
 	import org.apache.royale.events.utils.UIKeys;
 	import org.apache.royale.core.IItemRendererOwnerView;
 	/**
@@ -89,7 +89,7 @@ package com.unhurdle.spectrum
 			_button.focus();
 		}
 		private function positionPopup():void{
-			var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(this);
+			var componentBounds:Rectangle = getPopUpHostLocalBounds(this);
 			popover.positionPopup(componentBounds,componentBounds.width);
 		}
 

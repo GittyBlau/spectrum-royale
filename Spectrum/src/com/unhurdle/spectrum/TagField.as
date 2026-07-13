@@ -11,7 +11,7 @@ package com.unhurdle.spectrum
 	import org.apache.royale.events.ValueEvent;
 	import org.apache.royale.geom.Rectangle;
 	import org.apache.royale.html.util.getLabelFromData;
-	import org.apache.royale.utils.DisplayUtils;
+	import com.unhurdle.spectrum.utils.getPopUpHostLocalBounds;
 	[Event(name="inputChanged", type="org.apache.royale.events.Event")]
 	[Event(name="change", type="org.apache.royale.events.Event")]
 	[Event(name="tagAdded", type="org.apache.royale.events.ValueEvent")]
@@ -178,7 +178,7 @@ package com.unhurdle.spectrum
 				var label:String = getLabelFromData(comboBoxList.list,t);
 				longestWord = Math.max(longestWord, label.length);
 			}
-			var componentBounds:Rectangle = DisplayUtils.getScreenBoundingRect(input);
+			var componentBounds:Rectangle = getPopUpHostLocalBounds(input);
 			componentBounds.width = Math.min(componentBounds.width, longestWord * 16);
 			comboBoxList.positionPopup(componentBounds);
 		}
