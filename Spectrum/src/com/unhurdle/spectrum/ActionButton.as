@@ -91,7 +91,10 @@ package com.unhurdle.spectrum
     }
     override public function addedToParent():void{
       super.addedToParent();
-      addEventListener(MouseEvent.MOUSE_DOWN,elementMouseDown);
+      COMPILE::SWF
+      {
+        addEventListener(MouseEvent.MOUSE_DOWN,elementMouseDown);
+      }
       if(dataProvider){
         createFlyoutIcon();
       }
@@ -123,6 +126,7 @@ package com.unhurdle.spectrum
         ev.stopImmediatePropagation();
       }
     }
+    COMPILE::SWF
     private function elementMouseDown(ev:Event):void{
       closePopup();
     }
@@ -271,7 +275,9 @@ package com.unhurdle.spectrum
       popover.list.focus();
       COMPILE::JS
       {
-        requestAnimationFrame(positionPopup);
+        if(positionFrameId == 0){
+          positionFrameId = requestAnimationFrame(handlePositionFrame);
+        }
       }
       COMPILE::JS
       {
@@ -290,6 +296,9 @@ package com.unhurdle.spectrum
       }
     }
     protected function positionPopup():void{
+      if(!popover || !popover.open){
+        return;
+      }
       popover.setStyle("pointer-events","");
       var origin:Point = new Point(width, height);
       var relocated:Point = localToPopUpHost(origin,this);
@@ -301,6 +310,14 @@ package com.unhurdle.spectrum
     public var popover:ComboBoxList;
     private var anchorTracker:AnchoredOverlayTracker;
     private var outsidePointerTracker:OutsidePointerTracker;
+    COMPILE::JS
+    private var positionFrameId:Number = 0;
+
+    COMPILE::JS
+    private function handlePositionFrame():void{
+      positionFrameId = 0;
+      positionPopup();
+    }
 
     private function handleMenuChange(ev:Event):void{
       closePopup();
@@ -323,6 +340,10 @@ package com.unhurdle.spectrum
         {
           anchorTracker.stop();
           outsidePointerTracker.stop();
+          if(positionFrameId > 0){
+            cancelAnimationFrame(positionFrameId);
+            positionFrameId = 0;
+          }
         }
       COMPILE::SWF
       {

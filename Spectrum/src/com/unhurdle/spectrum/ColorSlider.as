@@ -64,9 +64,12 @@ package com.unhurdle.spectrum
 			if(value != _disabled){
 				_disabled = value;
 				handle.disabled = value;
-				input.disabled = value;
-				if(pointerDrag){
-					pointerDrag.enabled = !value;
+				COMPILE::JS
+				{
+					input.disabled = value;
+					if(pointerDrag){
+						pointerDrag.enabled = !value;
+					}
 				}
 				toggle("is-disabled",value);
 			}
@@ -169,8 +172,11 @@ package com.unhurdle.spectrum
 		protected var addedOnce:Boolean;
 		override public function addedToParent():void{
 			super.addedToParent();
-			if(!addedOnce){
-				pointerDrag = new PointerDrag(element, handlePointerStart, handlePointerMove, handlePointerEnd, vertical ? "pan-x" : "pan-y");
+			COMPILE::JS
+			{
+				if(!addedOnce){
+					pointerDrag = new PointerDrag(element, handlePointerStart, handlePointerMove, handlePointerEnd, vertical ? "pan-x" : "pan-y");
+				}
 			}
 			getRGBColors();
 			addedOnce = true;

@@ -13,7 +13,6 @@ package com.unhurdle.spectrum
 	import org.apache.royale.core.IParentIUIBase;
 	import org.apache.royale.core.IPopUpHost;
 	import org.apache.royale.events.Event;
-	import org.apache.royale.events.MouseEvent;
 	import org.apache.royale.geom.Point;
 	import org.apache.royale.html.util.getLabelFromData;
 	import com.unhurdle.spectrum.utils.localToPopUpHost;
@@ -40,7 +39,8 @@ package com.unhurdle.spectrum
 			var elem:WrappedHTMLElement = super.createElement();
 			// button.className = //??
 			icon = IconPrefix._18 + "More";
-			addEventListener(MouseEvent.MOUSE_DOWN,toggleMenu);
+			element.addEventListener("pointerdown",handlePointerDown);
+			element.addEventListener("keydown",handleKeyDown);
 			
 			return elem;
 		}
@@ -69,24 +69,34 @@ package com.unhurdle.spectrum
 			}
 		}
 
-		private function toggleMenu(event:MouseEvent):void{
-			// For now button is only available in the JS version
-			COMPILE::JS
-			{
-				if(event.button != 0){
-					//only handle left click
-					return;
-				}
+		COMPILE::JS
+		private function handlePointerDown(event:PointerEvent):void{
+			if(event.isPrimary === false || event.button != 0){
+				return;
 			}
 			event.preventDefault();
-			//mouseEvent
+			event.stopImmediatePropagation();
+			toggleMenu();
+		}
+
+		COMPILE::JS
+		private function handleKeyDown(event:KeyboardEvent):void{
+			if(event.repeat || (event.key != "Enter" && event.key != " ")){
+				return;
+			}
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			toggleMenu();
+		}
+
+		COMPILE::JS
+		private function toggleMenu():void{
 			if(!showEmptyMenu && (!dataProvider || !dataProvider.length)){
 				return;
 			}
 			if(_openMenu && _openMenu != this){
 				_openMenu.closePopup();
 			}
-			event.stopImmediatePropagation();
 			var shown:Boolean = popover && popover.open;
 			if(shown){// close it
 				closePopup();
@@ -103,6 +113,9 @@ package com.unhurdle.spectrum
 			_openMenu = this;
 		}
 		override protected function positionPopup():void{
+				if(!popover || !popover.open){
+					return;
+				}
 				popover.setStyle("pointer-events","");
 				var popoverWidth:Number = popover.width + 1;//added +1 cuz the browser was rounding it down
 				var popupHost:IPopUpHost = UIUtils.findPopUpHost(this);
