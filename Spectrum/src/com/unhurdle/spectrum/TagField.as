@@ -49,6 +49,7 @@ package com.unhurdle.spectrum
 			input.addEventListener("onBackspace", removeTag);
 			input.addEventListener("onEnter", inputChanged);
 			input.element.addEventListener("input", inputValueChanged);
+			input.element.addEventListener("pointerdown", handleOpeningPointerDown);
 			input.input.style.borderStyle = "none";
 			input.input.style.background = "none";
 			input.tabFocusable = false;
@@ -140,8 +141,11 @@ package com.unhurdle.spectrum
 				comboBoxList.list.dataProvider = valuesArr.slice();
 				if (valuesArr.length)
 				{
-					positionPopup(); // need to position before opening because adding it to the dom changes the position
-					setComboBoxListOpen(true);
+					// Wait for the opening pointer to finish so its click cannot hit the popup.
+					if(!ev || ev.type != "focus" || openingPointerId < 0){
+						positionPopup(); // need to position before opening because adding it to the dom changes the position
+						setComboBoxListOpen(true);
+					}
 				}
 				else
 				{
@@ -151,8 +155,54 @@ package com.unhurdle.spectrum
 			calculatePosition();
 			updating = false;
 		}
+		private var openingPointerId:Number = -1;
+
+		COMPILE::JS
+		private function handleOpeningPointerDown(event:PointerEvent):void
+		{
+			if(openingPointerId >= 0 || event.isPrimary === false || event.button != 0){
+				return;
+			}
+			openingPointerId = event.pointerId;
+			document.addEventListener("pointerup", handleOpeningPointerEnd, true);
+			document.addEventListener("pointercancel", handleOpeningPointerEnd, true);
+		}
+
+		COMPILE::JS
+		private function handleOpeningPointerEnd(event:PointerEvent):void
+		{
+			if(event.pointerId != openingPointerId){
+				return;
+			}
+			openingPointerId = -1;
+			document.removeEventListener("pointerup", handleOpeningPointerEnd, true);
+			document.removeEventListener("pointercancel", handleOpeningPointerEnd, true);
+			if(event.type == "pointerup" && valuesArr.length){
+				openComboBoxListAfterCurrentEvent();
+			}
+		}
+
+		private var openTimeoutId:Number = 0;
+		private function openComboBoxListAfterCurrentEvent():void
+		{
+			if(openTimeoutId > 0){
+				return;
+			}
+			openTimeoutId = setTimeout(function():void
+			{
+				openTimeoutId = 0;
+				if(valuesArr.length){
+					positionPopup();
+					setComboBoxListOpen(true);
+				}
+			}, 0);
+		}
 		private function setComboBoxListOpen(value:Boolean):void
 		{
+			if(!value && openTimeoutId > 0){
+				clearTimeout(openTimeoutId);
+				openTimeoutId = 0;
+			}
 			comboBoxList.open = value;
 			if(value){
 				if(!outsidePointerTracker){
