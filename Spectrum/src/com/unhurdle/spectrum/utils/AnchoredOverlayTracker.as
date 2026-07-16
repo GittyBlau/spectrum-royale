@@ -83,6 +83,10 @@ package com.unhurdle.spectrum.utils
 
 		private function handleChange(event:Event):void
 		{
+			if(event.type == "scroll" && event.target is HTMLUListElement)
+			{
+				return;
+			}
 			scheduleUpdate();
 		}
 
