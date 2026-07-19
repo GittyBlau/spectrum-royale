@@ -83,8 +83,7 @@ package com.unhurdle.spectrum.utils
 
 		private function handleChange(event:Event):void
 		{
-			if(event.type == "scroll" && event.target is HTMLUListElement)
-			{
+			if(event.type == "scroll" && event.target is HTMLUListElement && _overlay?.contains(event.target as Node)) {
 				return;
 			}
 			scheduleUpdate();
