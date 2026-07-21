@@ -209,7 +209,7 @@ package com.unhurdle.spectrum
 			COMPILE::JS
 			{
 				if(!anchorTracker){
-					anchorTracker = new AnchoredOverlayTracker(element, positionPopup, comboBoxList.element);
+					anchorTracker = new AnchoredOverlayTracker(element, positionPopup, closeComboBoxList, comboBoxList.element);
 				}
 				anchorTracker.start();
 				if(value){
