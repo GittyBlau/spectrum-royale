@@ -96,6 +96,7 @@ package com.unhurdle.spectrum.utils
 				if (!isAnchorInViewport(event.target as HTMLElement))	{
 					if (_closeHandler != null) {
 						_closeHandler();
+						stop();
 					}
 					return;
 				}
