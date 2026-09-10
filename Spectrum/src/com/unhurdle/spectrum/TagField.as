@@ -46,7 +46,6 @@ package com.unhurdle.spectrum
 			elem.appendChild(tagGroup.element);
 			input = new TextField();
 			input.setStyle("max-width","100%");
-			input.setStyle("min-width","100%");
 			input.setStyle("display", "inline-block");
 			input.addEventListener("onBackspace", removeTag);
 			input.addEventListener("onEnter", inputChanged);
