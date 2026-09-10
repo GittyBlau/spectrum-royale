@@ -2,7 +2,6 @@ package com.unhurdle.spectrum.beads
 {
   import org.apache.royale.core.Bead;
   import org.apache.royale.core.IStrand;
-  import com.unhurdle.spectrum.Application;
   import com.unhurdle.spectrum.interfaces.IKeyboardFocusable;
   import org.apache.royale.debugging.assert;
 
@@ -64,16 +63,12 @@ package com.unhurdle.spectrum.beads
         return;
       }
       modalityTrackingInitialized = true;
-      if(Application.current.usePointerEvents){
-        document.addEventListener("pointerdown",handleInputDown,true);
-      } else {
-        document.addEventListener("mousedown",handleInputDown,true);
-      }
+      document.addEventListener("pointerdown",handlePointerDown,true);
       document.addEventListener("keydown",handleKeyDown,true);
     }
 
     COMPILE::JS
-    private static function handleInputDown(event:Event):void{
+    private static function handlePointerDown(event:PointerEvent):void{
       keyboardModality = false;
     }
 

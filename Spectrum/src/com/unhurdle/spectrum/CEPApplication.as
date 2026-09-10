@@ -15,7 +15,6 @@ package com.unhurdle.spectrum
     {
       
       super();
-      usePointerEvents = false;
       _themeManager = ThemeManager.instance;
       _themeManager.init(this);
     }

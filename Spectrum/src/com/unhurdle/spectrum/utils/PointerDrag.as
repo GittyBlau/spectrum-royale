@@ -1,7 +1,5 @@
 package com.unhurdle.spectrum.utils
 {
-    import com.unhurdle.spectrum.Application;
-
     public class PointerDrag
     {
         COMPILE::SWF
@@ -17,11 +15,7 @@ package com.unhurdle.spectrum.utils
             _moveHandler = moveHandler;
             _endHandler = endHandler;
             setTouchAction(touchAction);
-            if (Application.current.usePointerEvents) {
-                _target.addEventListener("pointerdown", handlePointerDown);
-            } else {
-                _target.addEventListener("mousedown", handleMouseDown);
-            }
+            _target.addEventListener("pointerdown", handlePointerDown);
         }
 
         COMPILE::JS
@@ -34,8 +28,6 @@ package com.unhurdle.spectrum.utils
         private var _endHandler:Function;
         COMPILE::JS
         private var _pointerId:Number = -1;
-        COMPILE::JS
-        private var _mouseDown:Boolean;
         private var _enabled:Boolean = true;
 
         public function get enabled():Boolean
@@ -74,48 +66,7 @@ package com.unhurdle.spectrum.utils
             COMPILE::JS
             {
             cancel();
-            if (Application.current.usePointerEvents) {
-                _target.removeEventListener("pointerdown", handlePointerDown);
-            } else {
-                _target.removeEventListener("mousedown", handleMouseDown);
-            }
-            }
-        }
-
-        COMPILE::JS
-        private function handleMouseDown(event:MouseEvent):void
-        {
-            if (!_enabled || _mouseDown || event.button != 0) {
-                return;
-            }
-            if (_startHandler(event) === false || !_enabled) {
-                return;
-            }
-            _mouseDown = true;
-            window.addEventListener("mousemove", handleMouseMove);
-            window.addEventListener("mouseup", handleMouseUp);
-            window.addEventListener("blur", handleMouseCancel);
-            document.addEventListener("mouseleave", handleMouseCancel);
-            _moveHandler(event);
-        }
-
-        COMPILE::JS
-        private function handleMouseMove(event:MouseEvent):void
-        {
-            _moveHandler(event);
-        }
-
-        COMPILE::JS
-        private function handleMouseUp(event:MouseEvent):void
-        {
-            finishMouse();
-        }
-
-        COMPILE::JS
-        private function handleMouseCancel(event:Event):void
-        {
-            if (_mouseDown) {
-                finishMouse();
+            _target.removeEventListener("pointerdown", handlePointerDown);
             }
         }
 
@@ -126,9 +77,6 @@ package com.unhurdle.spectrum.utils
                 return;
             }
             if (_startHandler(event) === false) {
-                return;
-            }
-            if (!_enabled) {
                 return;
             }
             _pointerId = event.pointerId;
@@ -152,7 +100,7 @@ package com.unhurdle.spectrum.utils
         private function handlePointerUp(event:PointerEvent):void
         {
             if (event.pointerId == _pointerId) {
-                finishPointer();
+                finish();
             }
         }
 
@@ -160,7 +108,7 @@ package com.unhurdle.spectrum.utils
         private function handlePointerCancel(event:PointerEvent):void
         {
             if (event.pointerId == _pointerId) {
-                finishPointer();
+                finish();
             }
         }
 
@@ -168,7 +116,7 @@ package com.unhurdle.spectrum.utils
         private function handleLostPointerCapture(event:PointerEvent):void
         {
             if (event.pointerId == _pointerId) {
-                finishPointer();
+                finish();
             }
         }
 
@@ -176,15 +124,12 @@ package com.unhurdle.spectrum.utils
         private function cancel():void
         {
             if (_pointerId >= 0) {
-                finishPointer();
-            }
-            if (_mouseDown) {
-                finishMouse();
+                finish();
             }
         }
 
         COMPILE::JS
-        private function finishPointer():void
+        private function finish():void
         {
             var pointerId:Number = _pointerId;
             _pointerId = -1;
@@ -195,17 +140,6 @@ package com.unhurdle.spectrum.utils
             if (_target["hasPointerCapture"](pointerId)) {
                 _target["releasePointerCapture"](pointerId);
             }
-            _endHandler();
-        }
-
-        COMPILE::JS
-        private function finishMouse():void
-        {
-            _mouseDown = false;
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
-            window.removeEventListener("blur", handleMouseCancel);
-            document.removeEventListener("mouseleave", handleMouseCancel);
             _endHandler();
         }
     }

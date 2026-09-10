@@ -35,7 +35,7 @@ package com.unhurdle.spectrum {
 					element = (value as ISpectrumElement).element;
 				}
 			}
-			element.addEventListener(Application.current.usePointerEvents ? "pointerover" : "mouseover", titleHover);
+			element.addEventListener("pointerover", titleHover);
 		}
 
 		private function titleHover():void {

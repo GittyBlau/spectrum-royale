@@ -29,21 +29,6 @@ package com.unhurdle.spectrum
 
 		private var input:TextField;
 		private var tagGroup:TagGroup;
-		private var _placeholder:String;
-		
-		public function get placeholder():String
-		{
-			return _placeholder;
-		}
-
-		public function set placeholder(value:String):void
-		{
-			_placeholder = value;
-			if (input)
-			{
-				input.placeholder = getPlaceHolder();
-			}
-		}
 
 		public function get tags():Array
 		{
@@ -62,15 +47,10 @@ package com.unhurdle.spectrum
 			input = new TextField();
 			input.setStyle("max-width","100%");
 			input.setStyle("display", "inline-block");
-			input.placeholder = getPlaceHolder();
 			input.addEventListener("onBackspace", removeTag);
 			input.addEventListener("onEnter", inputChanged);
 			input.element.addEventListener("input", inputValueChanged);
-			if(Application.current.usePointerEvents){
-				input.element.addEventListener("pointerdown", handleOpeningPointerDown);
-			} else {
-				input.element.addEventListener("mousedown", handleOpeningMouseDown);
-			}
+			input.element.addEventListener("pointerdown", handleOpeningPointerDown);
 			input.input.style.borderStyle = "none";
 			input.input.style.background = "none";
 			input.tabFocusable = false;
@@ -179,42 +159,6 @@ package com.unhurdle.spectrum
 		private var openingPointerId:Number = -1;
 
 		COMPILE::JS
-		private function handleOpeningMouseDown(event:MouseEvent):void
-		{
-			if(openingPointerId >= 0 || event.button != 0){
-				return;
-			}
-			openingPointerId = 0;
-			document.addEventListener("mouseup", handleOpeningMouseUp, true);
-			window.addEventListener("blur", handleOpeningMouseCancel);
-			document.addEventListener("mouseleave", handleOpeningMouseCancel);
-		}
-
-		COMPILE::JS
-		private function handleOpeningMouseUp(event:MouseEvent):void
-		{
-			finishOpeningMouse();
-			if(valuesArr.length){
-				openComboBoxListAfterCurrentEvent();
-			}
-		}
-
-		COMPILE::JS
-		private function handleOpeningMouseCancel(event:Event):void
-		{
-			finishOpeningMouse();
-		}
-
-		COMPILE::JS
-		private function finishOpeningMouse():void
-		{
-			openingPointerId = -1;
-			document.removeEventListener("mouseup", handleOpeningMouseUp, true);
-			window.removeEventListener("blur", handleOpeningMouseCancel);
-			document.removeEventListener("mouseleave", handleOpeningMouseCancel);
-		}
-
-		COMPILE::JS
 		private function handleOpeningPointerDown(event:PointerEvent):void
 		{
 			if(openingPointerId >= 0 || event.isPrimary === false || event.button != 0){
@@ -321,20 +265,7 @@ package com.unhurdle.spectrum
 		}
 		private function inputChanged():void
 		{
-			// When a tag is typed rather than selected from the list, the data property should be set to the data of the matching item in the tagList.
-			var data:String;
-			if (tagList)
-			{
-				for each (var listItem:* in tagList)
-				{
-					if (listItem.name == input.text)
-					{
-						data = listItem.data;
-						break;
-					}
-				}
-			}
-			addTag(input.text, data);
+			addTag(input.text);
 		}
 		protected function addTag(text:String, data:String = null):void
 		{
@@ -393,20 +324,13 @@ package com.unhurdle.spectrum
 						{
 							dispatchEvent(new ValueEvent("tagRemoved", ev.currentTarget));
 							dispatchEvent(new Event("change"));
-							input.placeholder = getPlaceHolder();
 						});
 					tagGroup.addTag(tag);
 					dispatchEvent(new ValueEvent("tagAdded", tag));
 					dispatchEvent(new Event("change"));
 				}
 			}
-			input.placeholder = getPlaceHolder();
 			calculatePosition();
-		}
-		private function getPlaceHolder():String {
-			if(tagGroup.tags?.length)
-				return "";
-			return _placeholder || "";
 		}
 
 		private function calculatePosition():void
@@ -510,7 +434,6 @@ package com.unhurdle.spectrum
 				tagGroup.removeElement(tag);
 				dispatchEvent(new ValueEvent("tagRemoved", tag));
 				dispatchEvent(new Event("change"));
-				input.placeholder = getPlaceHolder();
 			}
 			calculatePosition();
 		}
@@ -521,7 +444,6 @@ package com.unhurdle.spectrum
 			{
 				tagGroup.removeElement(tag);
 			}
-			input.placeholder = getPlaceHolder();
 			calculatePosition();
 		}
 		private var _labelField:String = "label";

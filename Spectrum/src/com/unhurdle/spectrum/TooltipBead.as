@@ -186,9 +186,7 @@ package com.unhurdle.spectrum
 			COMPILE::JS
 			{
 				var element:HTMLElement = (_strand as ISpectrumElement).element;
-				if(Application.current.usePointerEvents){
-					element.addEventListener("pointerdown", handlePointerDown);
-				}
+				element.addEventListener("pointerdown", handlePointerDown);
 				anchorTracker = new AnchoredOverlayTracker(element, positionTooltip);
 			}
 		}

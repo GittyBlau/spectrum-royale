@@ -11,7 +11,6 @@ package com.unhurdle.spectrum.controllers
 	import org.apache.royale.events.IEventDispatcher;
 	import org.apache.royale.events.ItemClickedEvent;
 	import org.apache.royale.utils.getSelectionRenderBead;
-	import com.unhurdle.spectrum.Application;
 	import com.unhurdle.spectrum.ISpectrumElement;
 
 	
@@ -40,16 +39,10 @@ package com.unhurdle.spectrum.controllers
 			}
 			COMPILE::JS
 			{
-				if(Application.current.usePointerEvents){
-					var element:HTMLElement = (_strand as ISpectrumElement).element;
-					element.addEventListener("pointerenter", handlePointerEnter);
-					element.addEventListener("pointerleave", handlePointerLeave);
-					element.addEventListener("pointerdown", handlePointerDown);
-				} else {
-					host.addEventListener("mouseover", handleMouseOver);
-					host.addEventListener("mouseout", handleMouseOut);
-					host.addEventListener("mousedown", handleMouseDown);
-				}
+				var element:HTMLElement = (_strand as ISpectrumElement).element;
+				element.addEventListener("pointerenter", handlePointerEnter);
+				element.addEventListener("pointerleave", handlePointerLeave);
+				element.addEventListener("pointerdown", handlePointerDown);
 			}
 		}
 

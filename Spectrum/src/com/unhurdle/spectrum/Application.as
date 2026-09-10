@@ -6,8 +6,6 @@ package com.unhurdle.spectrum
 
   public class Application extends org.apache.royale.core.Application
   {
-    public var usePointerEvents:Boolean = true;
-
     /**
      * <inject_html>
      * <link rel="stylesheet" href="assets/css/components/page/dist.css">

@@ -86,17 +86,8 @@ package com.unhurdle.spectrum
 		private function handlePopoverChange(ev:Event):void{
 			_button.selected = popover.open;
 			toggle("is-open",popover.open);
-			if(popover.open){
-				return;
-			}
-			// Restore focus after close, but not synchronously: focusing during
-			// Enter selection re-activates the trigger and reopens the menu.
-			var currentFocus:Element = document.activeElement;
-			requestAnimationFrame(function():void{
-				if(document.activeElement == currentFocus){
-					_button.focus();
-				}
-			});
+			// keep focus on button after closing it
+			_button.focus();
 		}
 		private function positionPopup():void{
 			var componentBounds:Rectangle = getPopUpHostLocalBounds(this);

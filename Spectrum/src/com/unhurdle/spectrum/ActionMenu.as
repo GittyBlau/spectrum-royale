@@ -39,11 +39,7 @@ package com.unhurdle.spectrum
 			var elem:WrappedHTMLElement = super.createElement();
 			// button.className = //??
 			icon = IconPrefix._18 + "More";
-			if(Application.current.usePointerEvents){
-				element.addEventListener("pointerdown",handlePointerDown);
-			} else {
-				element.addEventListener("mousedown",handleMouseDown);
-			}
+			element.addEventListener("pointerdown",handlePointerDown);
 			element.addEventListener("keydown",handleKeyDown);
 			
 			return elem;
@@ -76,16 +72,6 @@ package com.unhurdle.spectrum
 		COMPILE::JS
 		private function handlePointerDown(event:PointerEvent):void{
 			if(event.isPrimary === false || event.button != 0){
-				return;
-			}
-			event.preventDefault();
-			event.stopImmediatePropagation();
-			toggleMenu();
-		}
-
-		COMPILE::JS
-		private function handleMouseDown(event:MouseEvent):void{
-			if(event.button != 0){
 				return;
 			}
 			event.preventDefault();
